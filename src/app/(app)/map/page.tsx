@@ -67,6 +67,12 @@ export default function MapPage() {
     (historyRequested && historyVesselMmsi === activeVessel?.mmsi) || filters.showHistorical;
   const trajectoryHours = historyRequested ? historyHours : 24;
 
+  // Unlike history (which needs a window picked — 1h vs 24h materially
+  // changes what's drawn), a prediction has nothing to choose: opening a
+  // vessel's detail panel is enough to show its one predicted route,
+  // mirroring the same "dashed line just shows up" experience as history.
+  const showPredicted = Boolean(sheetVessel) || filters.showPredicted;
+
   // Closing the detail panel should fully release the map's selection too
   // (stop the highlight ring / fly-to-lock), not leave it "stuck" on the
   // vessel that was open.
@@ -82,9 +88,7 @@ export default function MapPage() {
     showTrajectory ? (activeVessel?.mmsi ?? null) : null,
     trajectoryHours
   );
-  const { data: predictions } = usePredictions(
-    filters.showPredicted ? (activeVessel?.mmsi ?? null) : null
-  );
+  const { data: predictions } = usePredictions(showPredicted ? (activeVessel?.mmsi ?? null) : null);
 
   // A single click opens the one vessel-detail panel directly — no separate
   // preview popup that then links to a second, bigger panel.
@@ -115,7 +119,7 @@ export default function MapPage() {
         selectedVesselId={activeVesselId}
         onSelectVessel={handleSelectVessel}
         historicalTrack={showTrajectory ? (positions ?? []) : []}
-        predictedRoute={filters.showPredicted ? (predictions?.trajectory.points ?? []) : []}
+        predictedRoute={showPredicted ? (predictions?.trajectory.points ?? []) : []}
         tileLayerId={filters.tileLayerId}
         resetSignal={resetSignal}
         cluster
