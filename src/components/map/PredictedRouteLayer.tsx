@@ -3,8 +3,11 @@ import type { LatLngTuple } from "leaflet";
 import type { PredictedPoint } from "@/types";
 
 /**
- * Renders an AI-predicted route as a dashed polyline, visually distinct
- * from the solid historical track. Point radius fades with confidence.
+ * Renders an AI-predicted route as an animated dashed polyline ("marching
+ * ants" via CSS, see .predicted-route-dash in globals.css) — a different
+ * color and motion from TrajectoryLayer's static dashed historical track,
+ * so the two are never confused even though both are dashed lines.
+ * Point radius fades with confidence.
  *
  * DEMO/MOCK AI PREDICTION — see src/lib/ai/mock-prediction-service.ts.
  * Swapping in real predictions from the future FastAPI service requires
@@ -17,7 +20,13 @@ export function PredictedRouteLayer({ points }: { points: PredictedPoint[] }) {
     <>
       <Polyline
         positions={points.map((p) => [p.latitude, p.longitude] as LatLngTuple)}
-        pathOptions={{ color: "#f59e0b", weight: 3, opacity: 0.9, dashArray: "6 6" }}
+        pathOptions={{
+          color: "#ea580c",
+          weight: 3,
+          opacity: 0.95,
+          dashArray: "4 6",
+          className: "predicted-route-dash",
+        }}
       />
       {points.map((p, i) => (
         <CircleMarker
@@ -25,8 +34,8 @@ export function PredictedRouteLayer({ points }: { points: PredictedPoint[] }) {
           center={[p.latitude, p.longitude]}
           radius={3}
           pathOptions={{
-            color: "#f59e0b",
-            fillColor: "#f59e0b",
+            color: "#ea580c",
+            fillColor: "#ea580c",
             fillOpacity: p.confidence ?? 0.6,
           }}
         />

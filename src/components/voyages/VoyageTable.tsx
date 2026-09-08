@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   Table,
@@ -9,9 +11,12 @@ import {
 } from "@/components/ui/table";
 import { VoyageStatusBadge } from "./VoyageStatusBadge";
 import { formatDateTime } from "@/lib/format";
+import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import type { VoyageWithVessel } from "@/types";
 
 export function VoyageTable({ voyages }: { voyages: VoyageWithVessel[] }) {
+  const { openVessel } = useVesselDetailDialog();
+
   if (voyages.length === 0) {
     return (
       <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
@@ -37,10 +42,11 @@ export function VoyageTable({ voyages }: { voyages: VoyageWithVessel[] }) {
         <TableBody>
           {voyages.map((voyage) => (
             <TableRow key={voyage.id}>
-              <TableCell className="font-medium">
-                <Link href={`/vessels/${voyage.vesselMmsi}`} className="hover:underline">
-                  {voyage.vesselName}
-                </Link>
+              <TableCell
+                className="cursor-pointer font-medium hover:underline"
+                onClick={() => openVessel(voyage.vesselMmsi)}
+              >
+                {voyage.vesselName}
               </TableCell>
               <TableCell>{voyage.departurePort}</TableCell>
               <TableCell>

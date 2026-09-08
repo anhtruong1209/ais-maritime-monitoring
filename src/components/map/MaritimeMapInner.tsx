@@ -22,6 +22,7 @@ import { createPortIcon, createVesselIcon } from "@/lib/map/icons";
 import { AnomalyMarkerLayer } from "./AnomalyMarkerLayer";
 import { PredictedRouteLayer } from "./PredictedRouteLayer";
 import { TrajectoryLayer } from "./TrajectoryLayer";
+import { VectorBasemapLayer } from "./VectorBasemapLayer";
 import { VesselPopupContent } from "./VesselPopup";
 import type {
   AISPosition,
@@ -160,13 +161,20 @@ export function MaritimeMapInner({
       scrollWheelZoom
       className={className ?? "h-full w-full"}
     >
-      <TileLayer
-        key={tileLayer.id}
-        url={tileLayer.url}
-        attribution={tileLayer.attribution}
-        maxZoom={tileLayer.maxZoom}
-        className={tileLayer.tileClassName}
-      />
+      {tileLayer.type === "vector" ? (
+        <VectorBasemapLayer
+          key={tileLayer.id}
+          styleUrl={tileLayer.styleUrl}
+          attribution={tileLayer.attribution}
+        />
+      ) : (
+        <TileLayer
+          key={tileLayer.id}
+          url={tileLayer.url}
+          attribution={tileLayer.attribution}
+          maxZoom={tileLayer.maxZoom}
+        />
+      )}
 
       {ports.map((port) => (
         <Marker key={port.id} position={[port.latitude, port.longitude]} icon={createPortIcon()}>

@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "leaflet/dist/leaflet.css";
+@import "maplibre-gl/dist/maplibre-gl.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -50,80 +51,79 @@
 }
 
 /*
- * Maritime operations console theme: dark navy, single palette (no
- * light/dark toggle for the MVP — an ops console reads better as one
- * deliberate look than as a SaaS-style theme switch). Values are kept in
- * `.dark` too so nothing regresses if a toggle is added later.
+ * Maritime operations console theme: light, single palette (no light/dark
+ * toggle for the MVP). Values are kept in `.dark` too so nothing regresses
+ * if a toggle is added later.
  */
 :root {
-  color-scheme: dark;
-  --background: #0a0e1a;
-  --foreground: #e2e8f0;
-  --card: #101828;
-  --card-foreground: #e2e8f0;
-  --popover: #101828;
-  --popover-foreground: #e2e8f0;
-  --primary: #38bdf8;
-  --primary-foreground: #04121a;
-  --secondary: #1a2438;
-  --secondary-foreground: #cbd5e1;
-  --muted: #1a2438;
-  --muted-foreground: #8896ab;
-  --accent: #1a2438;
-  --accent-foreground: #e2e8f0;
-  --destructive: #f87171;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #38bdf8;
-  --chart-1: #3b82f6;
-  --chart-2: #f59e0b;
-  --chart-3: #22c55e;
-  --chart-4: #a855f7;
-  --chart-5: #06b6d4;
+  color-scheme: light;
+  --background: #f4f6f8;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #0369a1;
+  --primary-foreground: #ffffff;
+  --secondary: #eef1f5;
+  --secondary-foreground: #0f172a;
+  --muted: #eef1f5;
+  --muted-foreground: #64748b;
+  --accent: #e2e8f0;
+  --accent-foreground: #0f172a;
+  --destructive: #dc2626;
+  --border: #dbe2e8;
+  --input: #dbe2e8;
+  --ring: #0369a1;
+  --chart-1: #2563eb;
+  --chart-2: #d97706;
+  --chart-3: #16a34a;
+  --chart-4: #9333ea;
+  --chart-5: #0891b2;
   --radius: 0.5rem;
-  --sidebar: #0d1424;
-  --sidebar-foreground: #cbd5e1;
-  --sidebar-primary: #38bdf8;
-  --sidebar-primary-foreground: #04121a;
-  --sidebar-accent: #17223a;
-  --sidebar-accent-foreground: #e2e8f0;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #38bdf8;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #334155;
+  --sidebar-primary: #0369a1;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef1f5;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #dbe2e8;
+  --sidebar-ring: #0369a1;
 }
 
 .dark {
-  color-scheme: dark;
-  --background: #0a0e1a;
-  --foreground: #e2e8f0;
-  --card: #101828;
-  --card-foreground: #e2e8f0;
-  --popover: #101828;
-  --popover-foreground: #e2e8f0;
-  --primary: #38bdf8;
-  --primary-foreground: #04121a;
-  --secondary: #1a2438;
-  --secondary-foreground: #cbd5e1;
-  --muted: #1a2438;
-  --muted-foreground: #8896ab;
-  --accent: #1a2438;
-  --accent-foreground: #e2e8f0;
-  --destructive: #f87171;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.12);
-  --ring: #38bdf8;
-  --chart-1: #3b82f6;
-  --chart-2: #f59e0b;
-  --chart-3: #22c55e;
-  --chart-4: #a855f7;
-  --chart-5: #06b6d4;
-  --sidebar: #0d1424;
-  --sidebar-foreground: #cbd5e1;
-  --sidebar-primary: #38bdf8;
-  --sidebar-primary-foreground: #04121a;
-  --sidebar-accent: #17223a;
-  --sidebar-accent-foreground: #e2e8f0;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #38bdf8;
+  color-scheme: light;
+  --background: #f4f6f8;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #0369a1;
+  --primary-foreground: #ffffff;
+  --secondary: #eef1f5;
+  --secondary-foreground: #0f172a;
+  --muted: #eef1f5;
+  --muted-foreground: #64748b;
+  --accent: #e2e8f0;
+  --accent-foreground: #0f172a;
+  --destructive: #dc2626;
+  --border: #dbe2e8;
+  --input: #dbe2e8;
+  --ring: #0369a1;
+  --chart-1: #2563eb;
+  --chart-2: #d97706;
+  --chart-3: #16a34a;
+  --chart-4: #9333ea;
+  --chart-5: #0891b2;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #334155;
+  --sidebar-primary: #0369a1;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef1f5;
+  --sidebar-accent-foreground: #0f172a;
+  --sidebar-border: #dbe2e8;
+  --sidebar-ring: #0369a1;
 }
 
 @layer base {
@@ -142,9 +142,8 @@
   }
 }
 
-/* Leaflet dark-theme integration. The tile layer itself (Carto Dark
-   Matter) is already dark; this restyles Leaflet's own chrome (popups,
-   attribution, zoom control) to match the app instead of default white. */
+/* Leaflet chrome (popups, attribution, zoom control) themed to match the
+   app instead of Leaflet's default styling. */
 .leaflet-container {
   background: var(--background);
   font-family: var(--font-sans);
@@ -163,20 +162,26 @@
   background: var(--secondary);
 }
 .leaflet-control-attribution {
-  background: rgba(10, 14, 26, 0.7) !important;
+  background: rgba(255, 255, 255, 0.8) !important;
   color: var(--muted-foreground) !important;
 }
 .leaflet-control-attribution a {
   color: var(--muted-foreground) !important;
 }
 .vessel-marker-icon,
-.port-marker-icon {
+.port-marker-icon,
+.anomaly-marker-icon {
   background: transparent;
   border: none;
 }
 
-/* Fakes a dark basemap from plain (genuinely free, keyless) OpenStreetMap
-   tiles — see TILE_LAYERS["osm-dark"] in lib/map/config.ts. */
-.map-tiles-dark {
-  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.7);
+/* "Marching ants" effect on the AI-predicted route, so it visually reads
+   as a live prediction rather than a static historical line. */
+.predicted-route-dash {
+  animation: predicted-route-march 0.6s linear infinite;
+}
+@keyframes predicted-route-march {
+  to {
+    stroke-dashoffset: -10;
+  }
 }

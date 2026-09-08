@@ -1,10 +1,14 @@
-import Link from "next/link";
+"use client";
+
 import { SeverityBadge } from "@/components/alerts/SeverityBadge";
 import { ANOMALY_TYPE_LABELS } from "@/lib/constants";
 import { formatRelativeTime } from "@/lib/format";
+import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import type { AnomalyWithVessel } from "@/types";
 
 export function RecentAlertsList({ items }: { items: AnomalyWithVessel[] }) {
+  const { openVessel } = useVesselDetailDialog();
+
   if (items.length === 0) {
     return <p className="text-sm text-muted-foreground">No alerts detected.</p>;
   }
@@ -13,9 +17,10 @@ export function RecentAlertsList({ items }: { items: AnomalyWithVessel[] }) {
     <ul className="divide-y divide-border">
       {items.map((alert) => (
         <li key={alert.id}>
-          <Link
-            href={`/vessels/${alert.vesselMmsi}`}
-            className="flex items-center justify-between gap-3 py-2 text-sm hover:bg-secondary/50"
+          <button
+            type="button"
+            onClick={() => openVessel(alert.vesselMmsi)}
+            className="flex w-full items-center justify-between gap-3 py-2 text-left text-sm hover:bg-secondary/50"
           >
             <div className="min-w-0">
               <p className="truncate font-medium">{ANOMALY_TYPE_LABELS[alert.type]}</p>
@@ -24,7 +29,7 @@ export function RecentAlertsList({ items }: { items: AnomalyWithVessel[] }) {
               </p>
             </div>
             <SeverityBadge severity={alert.severity} />
-          </Link>
+          </button>
         </li>
       ))}
     </ul>

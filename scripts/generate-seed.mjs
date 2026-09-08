@@ -444,7 +444,7 @@ const sqlNum = (v) => (v === null || v === undefined ? "null" : Number(v));
 // ---------------------------------------------------------------------------
 // Main generation
 // ---------------------------------------------------------------------------
-const TOTAL_VESSELS = 320;
+const TOTAL_VESSELS = 1000;
 const NAV_STATUS = {
   underway: "under way using engine",
   anchored: "at anchor",
@@ -570,29 +570,29 @@ for (let i = 0; i < TOTAL_VESSELS; i++) {
     jitterKm,
   });
 
-  const destination = toName.toUpperCase();
-  for (let f = 0; f < fixes.length; f++) {
-    const fix = fixes[f];
-    const isLast = f === fixes.length - 1;
-    let navStatus = NAV_STATUS.underway;
-    if (shipType === "fishing") navStatus = NAV_STATUS.fishing;
-    if (isLast && (voyageState === "arrived" || voyageState === "anchored_dest")) {
-      navStatus = fix.sog < 0.5 ? NAV_STATUS.anchored : NAV_STATUS.underway;
-    }
-    if (isLast && voyageState === "anchored_dest") navStatus = NAV_STATUS.anchored;
-
-    positionRows.push({
-      vesselId: vessel.id,
-      timestamp: fix.timestamp,
-      latitude: fix.lat,
-      longitude: fix.lon,
-      sog: navStatus === NAV_STATUS.anchored ? 0 : fix.sog,
-      cog: fix.cog,
-      heading: Math.round((fix.cog + randFloat(-3, 3) + 360) % 360),
-      navStatus,
-      destination,
+  function fixesToPositionRows(legFixes, destinationName, forceArrivalStatus) {
+    return legFixes.map((fix, idx) => {
+      const isLast = idx === legFixes.length - 1;
+      let navStatus = shipType === "fishing" ? NAV_STATUS.fishing : NAV_STATUS.underway;
+      if (isLast && forceArrivalStatus) {
+        navStatus = fix.sog < 0.5 ? NAV_STATUS.anchored : navStatus;
+      }
+      return {
+        vesselId: vessel.id,
+        timestamp: fix.timestamp,
+        latitude: fix.lat,
+        longitude: fix.lon,
+        sog: navStatus === NAV_STATUS.anchored ? 0 : fix.sog,
+        cog: fix.cog,
+        heading: Math.round((fix.cog + randFloat(-3, 3) + 360) % 360),
+        navStatus,
+        destination: destinationName.toUpperCase(),
+      };
     });
   }
+
+  const forceCurrentArrival = voyageState === "arrived" || voyageState === "anchored_dest";
+  positionRows.push(...fixesToPositionRows(fixes, toName, forceCurrentArrival));
 
   const departureTime = fixes[0].timestamp;
   const lastFix = fixes[fixes.length - 1];
@@ -606,27 +606,51 @@ for (let i = 0; i < TOTAL_VESSELS; i++) {
     destinationPort: toName,
     departureTime,
     estimatedArrival: new Date(etaMs).toISOString(),
-    actualArrival: voyageState === "arrived" || voyageState === "anchored_dest" ? lastFix.timestamp : null,
-    status:
-      voyageState === "arrived" || voyageState === "anchored_dest" ? "completed" :
-      voyageState === "departing" ? "in_progress" : "in_progress",
+    actualArrival: forceCurrentArrival ? lastFix.timestamp : null,
+    status: forceCurrentArrival ? "completed" : "in_progress",
   });
 
-  // ~35% of vessels also get one earlier, fully completed historical voyage.
-  if (rand() < 0.35) {
-    const pastDays = randInt(3, 20);
-    const pastDeparture = new Date(new Date(departureTime).getTime() - pastDays * 86_400_000);
-    const pastDurationHours = randInt(18, 96);
-    const pastArrival = new Date(pastDeparture.getTime() + pastDurationHours * 3_600_000);
+  // Chain several earlier, fully completed voyages backward in time along
+  // the same corridor (alternating direction — a return trip, then the
+  // next voyage out, etc.) so each vessel has real trajectory depth for
+  // paginated AIS message history and longer trajectory-window views, not
+  // just its current leg.
+  const numHistoricalLegs = shipType === "fishing" ? randInt(3, 6) : randInt(2, 4);
+  let chainEndMs = new Date(fixes[0].timestamp).getTime();
+  let sameDirectionAsCurrent = true;
+
+  for (let h = 0; h < numHistoricalLegs; h++) {
+    sameDirectionAsCurrent = !sameDirectionAsCurrent;
+    const legWaypoints = sameDirectionAsCurrent ? waypoints : [...waypoints].reverse();
+    const legFromName = sameDirectionAsCurrent ? fromName : toName;
+    const legToName = sameDirectionAsCurrent ? toName : fromName;
+
+    const portGapHours = randInt(2, 14);
+    chainEndMs -= portGapHours * 3_600_000;
+
+    const legFixes = buildTrajectory({
+      waypoints: legWaypoints,
+      progressStart: 0,
+      progressEnd: 1,
+      endTimeMs: chainEndMs,
+      cruiseSpeedKn,
+      intervalMinutes,
+      jitterKm,
+    });
+
+    positionRows.push(...fixesToPositionRows(legFixes, legToName, true));
+
     voyageRows.push({
       vesselId: vessel.id,
-      departurePort: toName,
-      destinationPort: fromName,
-      departureTime: pastDeparture.toISOString(),
-      estimatedArrival: pastArrival.toISOString(),
-      actualArrival: pastArrival.toISOString(),
+      departurePort: legFromName,
+      destinationPort: legToName,
+      departureTime: legFixes[0].timestamp,
+      estimatedArrival: legFixes[legFixes.length - 1].timestamp,
+      actualArrival: legFixes[legFixes.length - 1].timestamp,
       status: "completed",
     });
+
+    chainEndMs = new Date(legFixes[0].timestamp).getTime();
   }
 
   // --- Predictions (subset of moving vessels) ------------------------------

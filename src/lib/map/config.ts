@@ -5,42 +5,52 @@ import type { LatLngBoundsExpression, LatLngTuple } from "leaflet";
 // the basemap later (e.g. for a licensed nautical chart provider) only
 // requires editing this file — no map component needs to change.
 
-export interface TileLayerConfig {
+export interface RasterTileLayerConfig {
   id: string;
   name: string;
+  type: "raster";
   url: string;
   attribution: string;
   maxZoom: number;
-  /**
-   * Optional CSS class applied to each tile <img>. Used by "osm-dark" to
-   * fake a dark basemap from plain OSM tiles via a CSS filter — no paid
-   * "dark style" tile provider involved.
-   */
-  tileClassName?: string;
 }
 
-// OpenStreetMap tiles ONLY — served directly by the OSM Foundation / the
-// Humanitarian OSM Team, genuinely free with no API key, no usage cap for
-// this scale of app. (CARTO's basemaps.cartocdn.com raster tiles were
-// removed from this list: they now silently return a 200 OK PNG watermarked
-// "API KEY REQUIRED" for unauthenticated requests instead of erroring — not
-// actually free anymore, despite looking reachable.)
-// No provider here is known to misrepresent Vietnam's maritime sovereignty
+export interface VectorTileLayerConfig {
+  id: string;
+  name: string;
+  type: "vector";
+  /** MapLibre style JSON endpoint. */
+  styleUrl: string;
+  attribution: string;
+}
+
+export type TileLayerConfig = RasterTileLayerConfig | VectorTileLayerConfig;
+
+// Free, keyless tile providers only. No Google Maps, no paid Mapbox
+// styles, no provider known to misrepresent Vietnam's maritime sovereignty
 // (Hoang Sa / Truong Sa, the East Sea / South China Sea, the Gulf of
 // Tonkin boundary).
+//
+// CARTO's basemaps.cartocdn.com raster tiles were deliberately left out:
+// they now silently return a 200 OK PNG watermarked "API KEY REQUIRED" for
+// unauthenticated requests instead of erroring — not actually free
+// anymore, despite looking reachable from a plain HTTP check.
 export const TILE_LAYERS: TileLayerConfig[] = [
   {
-    id: "osm-dark",
-    name: "OpenStreetMap (Dark)",
-    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    id: "vn-vector",
+    name: "Vector (Vietnamese labels)",
+    type: "vector",
+    // OpenFreeMap: a free, keyless, community-run vector tile host serving
+    // OpenMapTiles-schema data. Chosen over a plain raster basemap because
+    // vector styles can be told which name tag to prefer per label — see
+    // preferVietnameseLabels() in ./vietnamese-style.ts.
+    styleUrl: "https://tiles.openfreemap.org/styles/liberty",
     attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxZoom: 19,
-    tileClassName: "map-tiles-dark",
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://openfreemap.org">OpenFreeMap</a>',
   },
   {
     id: "osm-standard",
-    name: "OpenStreetMap",
+    name: "OpenStreetMap (raster)",
+    type: "raster",
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -49,6 +59,7 @@ export const TILE_LAYERS: TileLayerConfig[] = [
   {
     id: "osm-humanitarian",
     name: "Humanitarian (HOT)",
+    type: "raster",
     url: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, tiles by HOT',
@@ -56,7 +67,7 @@ export const TILE_LAYERS: TileLayerConfig[] = [
   },
 ];
 
-export const DEFAULT_TILE_LAYER_ID = "osm-dark";
+export const DEFAULT_TILE_LAYER_ID = "vn-vector";
 
 // Centered on the East Sea / South China Sea off central Vietnam so the
 // mainland coastline, Hoang Sa, and Truong Sa are all visible by default.

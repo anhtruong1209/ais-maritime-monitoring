@@ -1,8 +1,10 @@
-import Link from "next/link";
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { VesselStatusBadge } from "@/components/vessels/VesselStatusBadge";
 import { formatCog, formatCoordinate, formatRelativeTime, formatSog } from "@/lib/format";
 import { SHIP_TYPE_LABELS } from "@/lib/map/ship-type-meta";
+import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import type { VesselWithLatestPosition } from "@/types";
 
 function Field({ label, value }: { label: string; value: string }) {
@@ -17,6 +19,8 @@ function Field({ label, value }: { label: string; value: string }) {
 /** MarineTraffic-style summary card shown when a vessel marker is clicked. */
 export function VesselPopupContent({ vessel }: { vessel: VesselWithLatestPosition }) {
   const pos = vessel.latestPosition;
+  const { openVessel } = useVesselDetailDialog();
+
   return (
     <div className="w-56 space-y-2 text-sm">
       <div className="flex items-start justify-between gap-2">
@@ -44,7 +48,7 @@ export function VesselPopupContent({ vessel }: { vessel: VesselWithLatestPositio
         </dl>
       )}
 
-      <Button size="sm" className="w-full" render={<Link href={`/vessels/${vessel.mmsi}`} />}>
+      <Button size="sm" className="w-full" onClick={() => openVessel(vessel.mmsi)}>
         Chi tiết / View Details
       </Button>
     </div>

@@ -93,6 +93,33 @@ export async function getVesselPositions(
   return ((data ?? []) as AISPositionRow[]).map(mapAISPosition);
 }
 
+/** Paginated, most-recent-first AIS message log — independent of the
+ * "last N hours" window the trajectory map uses. */
+export async function getVesselMessages(
+  vesselId: string,
+  page: number,
+  pageSize: number
+): Promise<PaginatedResult<AISPosition>> {
+  const supabase = await createServerSupabaseClient();
+  const start = (page - 1) * pageSize;
+
+  const { data, error, count } = await supabase
+    .from("ais_positions")
+    .select("*", { count: "exact" })
+    .eq("vessel_id", vesselId)
+    .order("timestamp", { ascending: false })
+    .range(start, start + pageSize - 1);
+
+  if (error) throw new Error(`Failed to load AIS messages: ${error.message}`);
+
+  return {
+    data: ((data ?? []) as AISPositionRow[]).map(mapAISPosition),
+    page,
+    pageSize,
+    total: count ?? 0,
+  };
+}
+
 export async function getVesselPositionsInRange(
   vesselId: string,
   from: string,

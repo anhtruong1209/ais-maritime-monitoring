@@ -9,10 +9,9 @@ import {
 import { formatCog, formatDateTime, formatSog } from "@/lib/format";
 import type { AISPosition } from "@/types";
 
+/** Presentational — expects `positions` already in the order/page to display. */
 export function RecentAisMessagesTable({ positions }: { positions: AISPosition[] }) {
-  const recent = [...positions].reverse().slice(0, 15);
-
-  if (recent.length === 0) {
+  if (positions.length === 0) {
     return <p className="text-sm text-muted-foreground">No recent AIS messages.</p>;
   }
 
@@ -30,7 +29,7 @@ export function RecentAisMessagesTable({ positions }: { positions: AISPosition[]
           </TableRow>
         </TableHeader>
         <TableBody>
-          {recent.map((position) => (
+          {positions.map((position) => (
             <TableRow key={position.id}>
               <TableCell className="text-xs">{formatDateTime(position.timestamp)}</TableCell>
               <TableCell className="tabular-nums">{position.latitude.toFixed(4)}</TableCell>

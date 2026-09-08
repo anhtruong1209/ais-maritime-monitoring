@@ -1,4 +1,5 @@
-import Link from "next/link";
+"use client";
+
 import {
   Table,
   TableBody,
@@ -11,9 +12,12 @@ import { SeverityBadge } from "./SeverityBadge";
 import { AnomalyStatusBadge } from "./AnomalyStatusBadge";
 import { ANOMALY_TYPE_LABELS } from "@/lib/constants";
 import { formatCoordinate, formatDateTime } from "@/lib/format";
+import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import type { AnomalyWithVessel } from "@/types";
 
 export function AnomalyTable({ anomalies }: { anomalies: AnomalyWithVessel[] }) {
+  const { openVessel } = useVesselDetailDialog();
+
   if (anomalies.length === 0) {
     return (
       <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
@@ -40,10 +44,11 @@ export function AnomalyTable({ anomalies }: { anomalies: AnomalyWithVessel[] }) 
         <TableBody>
           {anomalies.map((anomaly) => (
             <TableRow key={anomaly.id}>
-              <TableCell className="font-medium">
-                <Link href={`/vessels/${anomaly.vesselMmsi}`} className="hover:underline">
-                  {anomaly.vesselName}
-                </Link>
+              <TableCell
+                className="cursor-pointer font-medium hover:underline"
+                onClick={() => openVessel(anomaly.vesselMmsi)}
+              >
+                {anomaly.vesselName}
               </TableCell>
               <TableCell className="text-xs">{formatDateTime(anomaly.detectedAt)}</TableCell>
               <TableCell>{ANOMALY_TYPE_LABELS[anomaly.type]}</TableCell>

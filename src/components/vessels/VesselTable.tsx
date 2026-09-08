@@ -1,4 +1,5 @@
-import Link from "next/link";
+"use client";
+
 import {
   Table,
   TableBody,
@@ -10,9 +11,12 @@ import {
 import { ShipTypeBadge } from "./ShipTypeBadge";
 import { VesselStatusBadge } from "./VesselStatusBadge";
 import { formatCog, formatRelativeTime, formatSog } from "@/lib/format";
+import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import type { VesselWithLatestPosition } from "@/types";
 
 export function VesselTable({ vessels }: { vessels: VesselWithLatestPosition[] }) {
+  const { openVessel } = useVesselDetailDialog();
+
   if (vessels.length === 0) {
     return (
       <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
@@ -39,12 +43,12 @@ export function VesselTable({ vessels }: { vessels: VesselWithLatestPosition[] }
         </TableHeader>
         <TableBody>
           {vessels.map((vessel) => (
-            <TableRow key={vessel.id} className="cursor-pointer">
-              <TableCell className="font-medium">
-                <Link href={`/vessels/${vessel.mmsi}`} className="hover:underline">
-                  {vessel.name}
-                </Link>
-              </TableCell>
+            <TableRow
+              key={vessel.id}
+              className="cursor-pointer"
+              onClick={() => openVessel(vessel.mmsi)}
+            >
+              <TableCell className="font-medium hover:underline">{vessel.name}</TableCell>
               <TableCell className="font-mono text-xs">{vessel.mmsi}</TableCell>
               <TableCell className="font-mono text-xs text-muted-foreground">
                 {vessel.imo ?? "—"}
