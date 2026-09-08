@@ -51,7 +51,9 @@ export const DEFAULT_PAGE_SIZE = 25;
 
 export const TRAJECTORY_WINDOW_OPTIONS = [
   { label: "Last 1 hour", hours: 1 },
+  { label: "Last 3 hours", hours: 3 },
   { label: "Last 6 hours", hours: 6 },
+  { label: "Last 9 hours", hours: 9 },
   { label: "Last 12 hours", hours: 12 },
   { label: "Last 24 hours", hours: 24 },
 ] as const;

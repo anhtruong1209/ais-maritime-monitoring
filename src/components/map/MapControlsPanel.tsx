@@ -1,6 +1,7 @@
 "use client";
 
-import { RotateCcw, Search, X } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,9 +15,12 @@ import { Switch } from "@/components/ui/switch";
 import { SHIP_TYPES, VESSEL_STATUSES } from "@/lib/constants";
 import { TILE_LAYERS } from "@/lib/map/config";
 import { SHIP_TYPE_LABELS } from "@/lib/map/ship-type-meta";
+import { cn } from "@/lib/utils";
 import { useLocale } from "@/providers/locale-provider";
+import type { VesselWithLatestPosition } from "@/types";
 
 const ALL = "all";
+const MAX_SUGGESTIONS = 8;
 
 export interface MapFilterState {
   search: string;
@@ -34,34 +38,155 @@ interface MapControlsPanelProps {
   onReset: () => void;
   selectedVesselName?: string | null;
   onClearSelection?: () => void;
+  /** Candidate vessels for the search box's autocomplete dropdown. */
+  vessels?: VesselWithLatestPosition[];
+  /** Called when the user picks one of the autocomplete suggestions. */
+  onSelectVessel?: (vessel: VesselWithLatestPosition) => void;
 }
 
+function VesselSearchBox({
+  search,
+  onSearchChange,
+  vessels,
+  onSelectVessel,
+  className,
+  inputClassName,
+  placeholder,
+}: {
+  search: string;
+  onSearchChange: (value: string) => void;
+  vessels: VesselWithLatestPosition[];
+  onSelectVessel?: (vessel: VesselWithLatestPosition) => void;
+  className?: string;
+  inputClassName?: string;
+  placeholder: string;
+}) {
+  const [focused, setFocused] = useState(false);
+  const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const suggestions = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return [];
+    return vessels
+      .filter((v) => v.name.toLowerCase().includes(query) || v.mmsi.includes(query))
+      .slice(0, MAX_SUGGESTIONS);
+  }, [search, vessels]);
+
+  const showDropdown = focused && suggestions.length > 0;
+
+  function handleSelect(vessel: VesselWithLatestPosition) {
+    onSelectVessel?.(vessel);
+    onSearchChange(vessel.name);
+    setFocused(false);
+  }
+
+  return (
+    <div className={cn("relative", className)}>
+      <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        value={search}
+        onChange={(e) => onSearchChange(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => {
+          // Delay so a click on a suggestion registers before the list unmounts.
+          blurTimeout.current = setTimeout(() => setFocused(false), 150);
+        }}
+        placeholder={placeholder}
+        className={cn("h-10 pl-8", inputClassName)}
+        autoComplete="off"
+      />
+      {showDropdown && (
+        <ul className="absolute top-full right-0 left-0 z-10 mt-1 max-h-64 overflow-y-auto rounded-md border border-border bg-popover text-popover-foreground shadow-lg">
+          {suggestions.map((vessel) => (
+            <li key={vessel.id}>
+              <button
+                type="button"
+                className="flex w-full flex-col items-start gap-0.5 px-3 py-2 text-left text-sm hover:bg-secondary"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  if (blurTimeout.current) clearTimeout(blurTimeout.current);
+                  handleSelect(vessel);
+                }}
+              >
+                <span className="font-medium">{vessel.name}</span>
+                <span className="text-xs text-muted-foreground">MMSI {vessel.mmsi}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Collapsed to a single icon button by default (top-right of the map) —
+ * expands into the full filter/basemap/layer panel on click, instead of
+ * permanently occupying map space. Search stays visible either way since
+ * it's the most-used control.
+ */
 export function MapControlsPanel({
   filters,
   onChange,
   onReset,
   selectedVesselName,
   onClearSelection,
+  vessels = [],
+  onSelectVessel,
 }: MapControlsPanelProps) {
   const { t } = useLocale();
+  const [open, setOpen] = useState(false);
+
+  const searchProps = {
+    search: filters.search,
+    onSearchChange: (value: string) => onChange({ search: value }),
+    vessels,
+    onSelectVessel,
+    placeholder: t("Search vessel name or MMSI…"),
+  };
+
+  if (!open) {
+    return (
+      <div className="flex items-start gap-2">
+        <VesselSearchBox
+          {...searchProps}
+          className="w-64"
+          inputClassName="border-border bg-card/95 shadow-lg backdrop-blur"
+        />
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-10 w-10 shrink-0 border-border bg-card/95 shadow-lg backdrop-blur"
+          onClick={() => setOpen(true)}
+          aria-label={t("Basemap")}
+        >
+          <SlidersHorizontal className="size-4" />
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="w-80 space-y-3.5 rounded-md border border-border bg-card/95 p-4 text-sm shadow-lg backdrop-blur">
-      <div className="relative">
-        <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={filters.search}
-          onChange={(e) => onChange({ search: e.target.value })}
-          placeholder={t("Search vessel name or MMSI…")}
-          className="h-10 pl-8"
-          autoComplete="off"
-        />
+      <div className="flex items-center justify-between">
+        <VesselSearchBox {...searchProps} className="flex-1" />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="ml-2 size-8 shrink-0"
+          onClick={() => setOpen(false)}
+          aria-label={t("Close")}
+        >
+          <X className="size-4" />
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <Select value={filters.shipType} onValueChange={(v) => onChange({ shipType: v ?? ALL })}>
           <SelectTrigger className="h-10">
-            <SelectValue placeholder={t("Type")} />
+            <SelectValue placeholder={t("Type")}>
+              {(v: string) => (v === ALL ? t("All types") : t(SHIP_TYPE_LABELS[v as keyof typeof SHIP_TYPE_LABELS]))}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>{t("All types")}</SelectItem>
@@ -75,7 +200,9 @@ export function MapControlsPanel({
 
         <Select value={filters.status} onValueChange={(v) => onChange({ status: v ?? ALL })}>
           <SelectTrigger className="h-10">
-            <SelectValue placeholder={t("Status")} />
+            <SelectValue placeholder={t("Status")}>
+              {(v: string) => (v === ALL ? t("All statuses") : t(v))}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>{t("All statuses")}</SelectItem>
@@ -90,7 +217,9 @@ export function MapControlsPanel({
 
       <Select value={filters.tileLayerId} onValueChange={(v) => v && onChange({ tileLayerId: v })}>
         <SelectTrigger className="h-10 w-full">
-          <SelectValue placeholder={t("Basemap")} />
+          <SelectValue placeholder={t("Basemap")}>
+            {(v: string) => TILE_LAYERS.find((l) => l.id === v)?.name ?? v}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {TILE_LAYERS.map((layer) => (

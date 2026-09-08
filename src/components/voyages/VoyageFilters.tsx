@@ -52,7 +52,9 @@ export function VoyageFilters() {
         onValueChange={(v) => updateParam("status", v)}
       >
         <SelectTrigger className="h-9 w-40">
-          <SelectValue placeholder={t("Status")} />
+          <SelectValue placeholder={t("Status")}>
+            {(v: string) => (v === ALL ? t("All statuses") : t(STATUS_LABELS[v] ?? v))}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>{t("All statuses")}</SelectItem>

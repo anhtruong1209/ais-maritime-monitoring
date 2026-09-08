@@ -32,7 +32,7 @@ export function VesselDetailSheet() {
             // (and MapLibre's canvas sits in one of those panes too), so
             // this has to clear that comfortably or the map renders on top
             // of the panel instead of the panel floating above the map.
-            "fixed top-14 bottom-8 left-0 z-[2000] flex w-full translate-x-0 flex-col border-r border-border bg-popover text-popover-foreground shadow-2xl transition-transform duration-200 ease-in-out sm:w-96",
+            "fixed top-14 bottom-8 left-0 z-[2000] flex w-full translate-x-0 flex-col border-r border-border bg-popover text-popover-foreground shadow-2xl transition-transform duration-200 ease-in-out sm:w-[38rem] xl:w-[46rem]",
             "data-starting-style:-translate-x-full data-ending-style:-translate-x-full"
           )}
         >

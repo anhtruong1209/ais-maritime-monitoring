@@ -69,9 +69,14 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
           <TabsTrigger value="particulars">{t("Particulars")}</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="current" className="space-y-4 overflow-y-auto p-4">
-          <CurrentAisCard position={latest} />
-          <VesselVoyagesCard voyages={voyages ?? []} />
+        <TabsContent value="current" className="overflow-y-auto p-4">
+          <div className="grid gap-4 xl:grid-cols-2">
+            <CurrentAisCard position={latest} />
+            <VesselInfoCard vessel={vessel} />
+          </div>
+          <div className="mt-4">
+            <VesselVoyagesCard voyages={voyages ?? []} />
+          </div>
         </TabsContent>
 
         <TabsContent value="history" className="overflow-y-auto p-4">

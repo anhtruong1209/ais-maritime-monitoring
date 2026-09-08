@@ -31,7 +31,11 @@ export function AnomalyFilters() {
     <div className="flex flex-wrap items-center gap-2">
       <Select value={searchParams.get("type") ?? ALL} onValueChange={(v) => updateParam("type", v)}>
         <SelectTrigger className="h-9 w-56">
-          <SelectValue placeholder={t("Anomaly type")} />
+          <SelectValue placeholder={t("Anomaly type")}>
+            {(v: string) =>
+              v === ALL ? t("All types") : t(ANOMALY_TYPE_LABELS[v as keyof typeof ANOMALY_TYPE_LABELS])
+            }
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>{t("All types")}</SelectItem>
@@ -48,7 +52,9 @@ export function AnomalyFilters() {
         onValueChange={(v) => updateParam("severity", v)}
       >
         <SelectTrigger className="h-9 w-36">
-          <SelectValue placeholder={t("Severity")} />
+          <SelectValue placeholder={t("Severity")}>
+            {(v: string) => (v === ALL ? t("All severities") : t(v))}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>{t("All severities")}</SelectItem>
@@ -65,7 +71,9 @@ export function AnomalyFilters() {
         onValueChange={(v) => updateParam("status", v)}
       >
         <SelectTrigger className="h-9 w-36">
-          <SelectValue placeholder={t("Status")} />
+          <SelectValue placeholder={t("Status")}>
+            {(v: string) => (v === ALL ? t("All statuses") : t(v))}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>{t("All statuses")}</SelectItem>

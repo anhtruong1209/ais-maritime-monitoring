@@ -5,7 +5,6 @@ import type { ShipType } from "@/types";
 interface VesselIconOptions {
   shipType: ShipType;
   cog: number;
-  selected?: boolean;
   moving?: boolean;
   /** Has an open (unresolved) anomaly — draws a warning ring around the icon. */
   flagged?: boolean;
@@ -17,15 +16,17 @@ interface VesselIconOptions {
 // Every vessel renders as the same arrow/hull shape regardless of motion
 // state (MarineTraffic does this too) — only opacity changes for
 // anchored/stopped/offline vessels, so orientation (COG/heading) always
-// reads clearly instead of collapsing to an undirected dot.
-function vesselSvg({ shipType, cog, selected, moving, flagged }: VesselIconOptions) {
+// reads clearly instead of collapsing to an undirected dot. The "selected"
+// state is a separate ring drawn by SelectionRing in MaritimeMapInner, not
+// part of this icon — that keeps the icon (and the marker array it lives
+// in) stable across selection changes; see that component's comment.
+function vesselSvg({ shipType, cog, moving, flagged }: VesselIconOptions) {
   const color = SHIP_TYPE_COLORS[shipType];
-  const size = selected ? 26 : 20;
-  const strokeWidth = selected ? 2.5 : 1.75;
+  const strokeWidth = 1.75;
   const opacity = moving ? 1 : 0.75;
 
   return `
-    <svg width="${size}" height="${size}" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+    <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
       style="transform: rotate(${cog}deg); transform-origin: center; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.65));">
       ${
         flagged
@@ -34,18 +35,16 @@ function vesselSvg({ shipType, cog, selected, moving, flagged }: VesselIconOptio
       }
       <path d="M12 0.5 L20.5 21 L12 16.5 L3.5 21 Z" fill="${color}" fill-opacity="${opacity}"
         stroke="#04070d" stroke-width="${strokeWidth}" stroke-linejoin="round" />
-      ${selected ? `<circle cx="12" cy="12" r="11" fill="none" stroke="#facc15" stroke-width="1.5" stroke-dasharray="2.5 2.5" />` : ""}
     </svg>
   `;
 }
 
 export function createVesselIcon(options: VesselIconOptions): L.DivIcon {
-  const size = options.selected ? 26 : 20;
   return L.divIcon({
     html: vesselSvg(options),
     className: "vessel-marker-icon",
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
   });
 }
 

@@ -24,9 +24,12 @@ export function VesselPredictionSelect({
   return (
     <Select value={value ?? undefined} onValueChange={(v) => v && onChange(v)}>
       <SelectTrigger className="h-9 w-72">
-        <SelectValue
-          placeholder={isLoading ? t("Loading vessels…") : t("Select a moving vessel…")}
-        />
+        <SelectValue placeholder={isLoading ? t("Loading vessels…") : t("Select a moving vessel…")}>
+          {(mmsi: string) => {
+            const vessel = vessels.find((v) => v.mmsi === mmsi);
+            return vessel ? `${vessel.name} · ${vessel.mmsi}` : mmsi;
+          }}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent className="max-h-72">
         {vessels.map((vessel) => (

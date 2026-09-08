@@ -6,20 +6,28 @@ interface VesselDetailContextValue {
   selectedMmsi: string | null;
   openVessel: (mmsi: string) => void;
   closeVessel: () => void;
+  /** "Last N hours" window chosen in the detail panel's History tab —
+   * shared so the /map page can draw that same window's trajectory on the
+   * actual map instead of the panel needing its own embedded map. */
+  historyHours: number;
+  setHistoryHours: (hours: number) => void;
 }
 
 const VesselDetailContext = createContext<VesselDetailContextValue | null>(null);
 
 export function VesselDetailProvider({ children }: { children: React.ReactNode }) {
   const [selectedMmsi, setSelectedMmsi] = useState<string | null>(null);
+  const [historyHours, setHistoryHours] = useState(24);
 
   const value = useMemo(
     () => ({
       selectedMmsi,
       openVessel: setSelectedMmsi,
       closeVessel: () => setSelectedMmsi(null),
+      historyHours,
+      setHistoryHours,
     }),
-    [selectedMmsi]
+    [selectedMmsi, historyHours]
   );
 
   return (

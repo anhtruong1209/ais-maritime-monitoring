@@ -52,7 +52,9 @@ export function VesselFilters() {
         onValueChange={(v) => updateParam("shipType", v)}
       >
         <SelectTrigger className="h-9 w-40">
-          <SelectValue placeholder={t("Type")} />
+          <SelectValue placeholder={t("Type")}>
+            {(v: string) => (v === ALL ? t("All types") : t(SHIP_TYPE_LABELS[v as keyof typeof SHIP_TYPE_LABELS]))}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>{t("All types")}</SelectItem>
@@ -69,7 +71,9 @@ export function VesselFilters() {
         onValueChange={(v) => updateParam("status", v)}
       >
         <SelectTrigger className="h-9 w-36">
-          <SelectValue placeholder={t("Status")} />
+          <SelectValue placeholder={t("Status")}>
+            {(v: string) => (v === ALL ? t("All statuses") : t(v))}
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>{t("All statuses")}</SelectItem>

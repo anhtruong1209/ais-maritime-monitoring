@@ -1,26 +1,27 @@
 "use client";
 
-import { useState } from "react";
 import { RecentAisMessagesTable } from "./RecentAisMessagesTable";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVesselPositions } from "@/hooks/use-vessel-positions";
 import { TRAJECTORY_WINDOW_OPTIONS } from "@/lib/constants";
 import { useLocale } from "@/providers/locale-provider";
+import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 
 /**
- * Plain data view of a vessel's recent AIS history — no embedded map here
- * on purpose, just the "last N hours" window switch and a table. The map
- * is the one on the page behind this panel, not a second one inside it.
+ * Data view of a vessel's recent AIS history — no embedded map here on
+ * purpose. `historyHours` is shared (via VesselDetailProvider) rather than
+ * local state, so picking a window here also drives the trajectory drawn
+ * on the actual map on /map, instead of needing a second map in this panel.
  */
 export function VesselHistoryPanel({ mmsi }: { mmsi: string }) {
-  const [hours, setHours] = useState(24);
-  const { data: positions, isLoading } = useVesselPositions(mmsi, hours);
+  const { historyHours, setHistoryHours } = useVesselDetailDialog();
+  const { data: positions, isLoading } = useVesselPositions(mmsi, historyHours);
   const { t } = useLocale();
 
   return (
     <div className="space-y-3">
-      <Tabs value={String(hours)} onValueChange={(v) => setHours(Number(v))}>
+      <Tabs value={String(historyHours)} onValueChange={(v) => setHistoryHours(Number(v))}>
         <TabsList>
           {TRAJECTORY_WINDOW_OPTIONS.map((opt) => (
             <TabsTrigger key={opt.hours} value={String(opt.hours)}>

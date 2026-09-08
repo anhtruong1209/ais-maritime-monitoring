@@ -27,7 +27,9 @@ export function PortEtaPicker({
   return (
     <Select value={value ?? AUTO} onValueChange={(v) => onChange(v === AUTO || !v ? null : v)}>
       <SelectTrigger className="h-10 w-64">
-        <SelectValue placeholder={t("Destination port")} />
+        <SelectValue placeholder={t("Destination port")}>
+          {(v: string) => (v === AUTO ? t("Auto (AIS reported destination)") : (ports?.find((p) => p.id === v)?.name ?? v))}
+        </SelectValue>
       </SelectTrigger>
       <SelectContent>
         <SelectItem value={AUTO}>{t("Auto (AIS reported destination)")}</SelectItem>

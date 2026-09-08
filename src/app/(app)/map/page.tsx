@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { MapCanvas } from "@/components/map/MapCanvas";
 import { MapControlsPanel, type MapFilterState } from "@/components/map/MapControlsPanel";
 import { MapLegend } from "@/components/map/MapLegend";
@@ -11,6 +11,8 @@ import { usePredictions } from "@/hooks/use-predictions";
 import { useOpenAnomalies } from "@/hooks/use-anomalies";
 import { DEFAULT_TILE_LAYER_ID } from "@/lib/map/config";
 import { useLocale } from "@/providers/locale-provider";
+import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
+import type { VesselWithLatestPosition } from "@/types";
 
 const ALL = "all";
 
@@ -19,9 +21,6 @@ const DEFAULT_FILTERS: MapFilterState = {
   shipType: ALL,
   status: ALL,
   tileLayerId: DEFAULT_TILE_LAYER_ID,
-  // Off by default: fetching + drawing a track on every single vessel
-  // click is wasted work most of the time. The user turns it on (the
-  // "Historical trajectory" switch) only when they actually want it.
   showHistorical: false,
   showPredicted: false,
   showAnomalies: true,
@@ -32,6 +31,10 @@ export default function MapPage() {
   const [selectedVesselId, setSelectedVesselId] = useState<string | null>(null);
   const [resetSignal, setResetSignal] = useState(0);
   const { t } = useLocale();
+  // The vessel-detail panel's own selection + "last N hours" choice — kept
+  // in the shared provider (not local state) so its History tab can drive
+  // this actual map's trajectory instead of needing an embedded map.
+  const { selectedMmsi, historyHours } = useVesselDetailDialog();
 
   const { data: vesselsResponse, isLoading } = useAllVesselsForMap({
     search: filters.search || undefined,
@@ -42,15 +45,32 @@ export default function MapPage() {
   const { data: anomalies } = useOpenAnomalies();
 
   const vessels = useMemo(() => vesselsResponse?.data ?? [], [vesselsResponse]);
-  const selectedVessel = vessels.find((v) => v.id === selectedVesselId) ?? null;
+
+  // A vessel opened in the detail panel (from anywhere — this map's own
+  // popup, a table on another page, a fleet roster) takes priority as the
+  // "active" vessel for trajectory purposes; a plain marker click without
+  // opening the panel still flies to/highlights via local state alone.
+  const sheetVessel = useMemo(
+    () => (selectedMmsi ? (vessels.find((v) => v.mmsi === selectedMmsi) ?? null) : null),
+    [vessels, selectedMmsi]
+  );
+  const activeVesselId = sheetVessel?.id ?? selectedVesselId;
+  const activeVessel = sheetVessel ?? vessels.find((v) => v.id === selectedVesselId) ?? null;
+
+  const showTrajectory = Boolean(sheetVessel) || filters.showHistorical;
+  const trajectoryHours = sheetVessel ? historyHours : 24;
 
   const { data: positions } = useVesselPositions(
-    filters.showHistorical ? (selectedVessel?.mmsi ?? null) : null,
-    24
+    showTrajectory ? (activeVessel?.mmsi ?? null) : null,
+    trajectoryHours
   );
   const { data: predictions } = usePredictions(
-    filters.showPredicted ? (selectedVessel?.mmsi ?? null) : null
+    filters.showPredicted ? (activeVessel?.mmsi ?? null) : null
   );
+
+  const handleSelectVessel = useCallback((vessel: VesselWithLatestPosition) => {
+    setSelectedVesselId(vessel.id);
+  }, []);
 
   function handleChange(patch: Partial<MapFilterState>) {
     setFilters((prev) => ({ ...prev, ...patch }));
@@ -68,9 +88,9 @@ export default function MapPage() {
         vessels={vessels}
         ports={ports}
         anomalies={filters.showAnomalies ? (anomalies ?? []) : []}
-        selectedVesselId={selectedVesselId}
-        onSelectVessel={(v) => setSelectedVesselId(v.id)}
-        historicalTrack={filters.showHistorical ? (positions ?? []) : []}
+        selectedVesselId={activeVesselId}
+        onSelectVessel={handleSelectVessel}
+        historicalTrack={showTrajectory ? (positions ?? []) : []}
         predictedRoute={filters.showPredicted ? (predictions?.trajectory.points ?? []) : []}
         tileLayerId={filters.tileLayerId}
         resetSignal={resetSignal}
@@ -79,18 +99,22 @@ export default function MapPage() {
 
       <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-3">
         <div className="pointer-events-auto flex justify-between">
+          {isLoading ? (
+            <div className="h-fit rounded-md border border-border bg-card/95 px-3 py-1.5 text-xs text-muted-foreground shadow-lg backdrop-blur">
+              {t("Loading fleet…")}
+            </div>
+          ) : (
+            <span />
+          )}
           <MapControlsPanel
             filters={filters}
             onChange={handleChange}
             onReset={handleReset}
-            selectedVesselName={selectedVessel?.name}
+            selectedVesselName={activeVessel?.name}
             onClearSelection={() => setSelectedVesselId(null)}
+            vessels={vessels}
+            onSelectVessel={handleSelectVessel}
           />
-          {isLoading && (
-            <div className="h-fit rounded-md border border-border bg-card/95 px-3 py-1.5 text-xs text-muted-foreground shadow-lg backdrop-blur">
-              {t("Loading fleet…")}
-            </div>
-          )}
         </div>
         <div className="pointer-events-auto self-start">
           <MapLegend />

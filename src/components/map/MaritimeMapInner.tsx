@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  CircleMarker,
   MapContainer,
   Marker,
   Popup,
@@ -10,7 +11,7 @@ import {
 } from "react-leaflet";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import L from "leaflet";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { LatLngTuple } from "leaflet";
 import {
   DEFAULT_TILE_LAYER_ID,
@@ -74,26 +75,26 @@ function FlyToSelection({ target }: { target: LatLngTuple | null }) {
   return null;
 }
 
-/** MarineTraffic-style bottom-right readout: cursor lat/lon + zoom level. */
-function MapReadout() {
-  const [latLng, setLatLng] = useState<{ lat: number; lng: number } | null>(null);
-  // Zoom is tracked via the 'zoomend' event rather than calling
-  // map.getZoom() on every render: a render-time call can fire after the
-  // map has been torn down (e.g. this map was inside a dialog that just
-  // closed) and throw, which crashes the whole tree instead of just this
-  // readout. Event-driven reads only ever fire while the map is alive.
-  const map = useMap();
-  const [zoom, setZoom] = useState(() => map.getZoom());
-  useMapEvents({
-    mousemove: (e) => setLatLng(e.latlng),
-    mouseout: () => setLatLng(null),
-    zoomend: () => setZoom(map.getZoom()),
-  });
-
+/**
+ * Highlight ring for the selected vessel — a separate, single-marker layer
+ * instead of baking "selected" into that vessel's own icon. Baking it into
+ * the icon meant the *entire* markers array (all vessels) had to be
+ * recomputed on every selection change (since it's one array literal),
+ * which forced the marker-cluster plugin to rebuild its whole tree on
+ * every click — the likely cause of "click vessel B, map flies back to
+ * vessel A" (a click landing during a mid-rebuild, stale state). Keeping
+ * this independent means selecting a vessel never touches the main
+ * markers array at all.
+ */
+function SelectionRing({ position }: { position: LatLngTuple | null }) {
+  if (!position) return null;
   return (
-    <div className="pointer-events-none absolute right-2 bottom-2 z-[1000] rounded border border-border bg-card/90 px-2.5 py-1 font-mono text-xs text-muted-foreground shadow backdrop-blur">
-      {latLng ? `${latLng.lat.toFixed(4)}°, ${latLng.lng.toFixed(4)}°` : "—"} · zoom {zoom}
-    </div>
+    <CircleMarker
+      center={position}
+      radius={14}
+      pathOptions={{ color: "#facc15", weight: 2, dashArray: "2.5 2.5", fill: false }}
+      interactive={false}
+    />
   );
 }
 
@@ -176,36 +177,47 @@ export function MaritimeMapInner({
     selected?.latestPosition != null
       ? [selected.latestPosition.latitude, selected.latestPosition.longitude]
       : null;
-  const flaggedVesselIds = new Set(anomalies.map((a) => a.vesselId));
+  const flaggedVesselIds = useMemo(
+    () => new Set(anomalies.map((a) => a.vesselId)),
+    [anomalies]
+  );
 
-  const vesselsWithPosition = vessels.filter((v) => v.latestPosition);
+  const vesselsWithPosition = useMemo(
+    () => vessels.filter((v) => v.latestPosition),
+    [vessels]
+  );
   const [currentZoom, setCurrentZoom] = useState(zoom);
   const showHeatmap =
     vesselsWithPosition.length >= HEATMAP_MIN_VESSELS && currentZoom < HEATMAP_ZOOM_THRESHOLD;
 
-  const markers = vesselsWithPosition.map((vessel) => {
-    const pos = vessel.latestPosition!;
-    return (
-      <Marker
-        key={vessel.id}
-        position={[pos.latitude, pos.longitude]}
-        icon={createVesselIcon({
-          shipType: vessel.shipType,
-          cog: pos.cog,
-          selected: vessel.id === selectedVesselId,
-          moving: vessel.status === "moving",
-          flagged: flaggedVesselIds.has(vessel.id),
-        })}
-        eventHandlers={{
-          click: () => onSelectVessel?.(vessel),
-        }}
-      >
-        <Popup>
-          <VesselPopupContent vessel={vessel} />
-        </Popup>
-      </Marker>
-    );
-  });
+  // Deliberately does NOT depend on selectedVesselId — see SelectionRing's
+  // comment above. Only actual vessel/anomaly data changes rebuild this.
+  const markers = useMemo(
+    () =>
+      vesselsWithPosition.map((vessel) => {
+        const pos = vessel.latestPosition!;
+        return (
+          <Marker
+            key={vessel.id}
+            position={[pos.latitude, pos.longitude]}
+            icon={createVesselIcon({
+              shipType: vessel.shipType,
+              cog: pos.cog,
+              moving: vessel.status === "moving",
+              flagged: flaggedVesselIds.has(vessel.id),
+            })}
+            eventHandlers={{
+              click: () => onSelectVessel?.(vessel),
+            }}
+          >
+            <Popup>
+              <VesselPopupContent vessel={vessel} />
+            </Popup>
+          </Marker>
+        );
+      }),
+    [vesselsWithPosition, flaggedVesselIds, onSelectVessel]
+  );
 
   return (
     <MapContainer
@@ -266,7 +278,7 @@ export function MaritimeMapInner({
       <FlyToSelection target={selectedLatLng} />
       <FlyToReset signal={resetSignal} center={center} zoom={zoom} />
       <ScaleControl />
-      <MapReadout />
+      <SelectionRing position={selectedLatLng} />
       <MapResizeHandler />
       <ZoomTracker onZoomChange={setCurrentZoom} />
     </MapContainer>
