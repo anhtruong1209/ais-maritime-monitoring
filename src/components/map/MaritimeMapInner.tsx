@@ -25,7 +25,6 @@ import { PredictedRouteLayer } from "./PredictedRouteLayer";
 import { TrajectoryLayer } from "./TrajectoryLayer";
 import { VectorBasemapLayer } from "./VectorBasemapLayer";
 import { VesselHeatmapLayer } from "./VesselHeatmapLayer";
-import { VesselPopupContent } from "./VesselPopup";
 import type {
   AISPosition,
   AnomalyWithVessel,
@@ -230,11 +229,7 @@ export function MaritimeMapInner({
             eventHandlers={{
               click: () => onSelectVessel?.(vessel),
             }}
-          >
-            <Popup>
-              <VesselPopupContent vessel={vessel} />
-            </Popup>
-          </Marker>
+          />
         );
       }),
     [vesselsWithPosition, flaggedVesselIds, onSelectVessel]

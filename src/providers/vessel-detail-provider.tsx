@@ -10,13 +10,15 @@ interface VesselDetailContextValue {
    * shared so the /map page can draw that same window's trajectory on the
    * actual map instead of the panel needing its own embedded map. */
   historyHours: number;
-  setHistoryHours: (hours: number) => void;
-  /** True only once the user has actually picked a window in the History
-   * tab (not merely because a vessel is selected/open) — the map should
-   * stay clean until the user asks to see a trajectory, not draw one the
-   * moment a vessel's detail panel opens. Resets whenever the panel opens
-   * a (possibly different) vessel or closes. */
+  setHistoryHours: (hours: number, mmsi: string) => void;
+  /** True only once the user has actually picked a window for a vessel —
+   * the map should stay clean until asked, not draw a trajectory the
+   * moment a vessel's detail panel opens. */
   historyRequested: boolean;
+  /** Which vessel historyHours/historyRequested currently apply to — lets
+   * selecting a *different* vessel invalidate a stale trajectory request
+   * left over from whichever vessel was open before. */
+  historyVesselMmsi: string | null;
 }
 
 const VesselDetailContext = createContext<VesselDetailContextValue | null>(null);
@@ -25,20 +27,29 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
   const [selectedMmsi, setSelectedMmsi] = useState<string | null>(null);
   const [historyHours, setHistoryHoursState] = useState(24);
   const [historyRequested, setHistoryRequested] = useState(false);
+  const [historyVesselMmsi, setHistoryVesselMmsi] = useState<string | null>(null);
 
-  const openVessel = useCallback((mmsi: string) => {
-    setSelectedMmsi(mmsi);
-    setHistoryRequested(false);
-  }, []);
+  const openVessel = useCallback(
+    (mmsi: string) => {
+      setSelectedMmsi(mmsi);
+      // Switching to a different vessel invalidates any trajectory that was
+      // requested for the previous one.
+      if (historyVesselMmsi !== mmsi) {
+        setHistoryRequested(false);
+      }
+    },
+    [historyVesselMmsi]
+  );
 
   const closeVessel = useCallback(() => {
     setSelectedMmsi(null);
     setHistoryRequested(false);
   }, []);
 
-  const setHistoryHours = useCallback((hours: number) => {
+  const setHistoryHours = useCallback((hours: number, mmsi: string) => {
     setHistoryHoursState(hours);
     setHistoryRequested(true);
+    setHistoryVesselMmsi(mmsi);
   }, []);
 
   const value = useMemo(
@@ -49,8 +60,9 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
       historyHours,
       setHistoryHours,
       historyRequested,
+      historyVesselMmsi,
     }),
-    [selectedMmsi, openVessel, closeVessel, historyHours, setHistoryHours, historyRequested]
+    [selectedMmsi, openVessel, closeVessel, historyHours, setHistoryHours, historyRequested, historyVesselMmsi]
   );
 
   return (
@@ -58,8 +70,10 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
   );
 }
 
-/** Opens the shared vessel detail modal for a given MMSI from anywhere in
- * the app shell — vessel tables, map popups, fleet rosters, etc. */
+/** Opens the shared vessel detail panel for a given MMSI from anywhere in
+ * the app shell — vessel tables, map markers, fleet rosters, etc. This is
+ * the single place vessel detail lives; a marker click opens it directly
+ * rather than a separate small popup that then links to it. */
 export function useVesselDetailDialog() {
   const ctx = useContext(VesselDetailContext);
   if (!ctx) {

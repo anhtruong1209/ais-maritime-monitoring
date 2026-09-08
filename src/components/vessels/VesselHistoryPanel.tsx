@@ -21,7 +21,7 @@ export function VesselHistoryPanel({ mmsi }: { mmsi: string }) {
 
   return (
     <div className="space-y-3">
-      <Tabs value={String(historyHours)} onValueChange={(v) => setHistoryHours(Number(v))}>
+      <Tabs value={String(historyHours)} onValueChange={(v) => setHistoryHours(Number(v), mmsi)}>
         <TabsList>
           {TRAJECTORY_WINDOW_OPTIONS.map((opt) => (
             <TabsTrigger key={opt.hours} value={String(opt.hours)}>

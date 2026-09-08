@@ -34,7 +34,8 @@ export default function MapPage() {
   // The vessel-detail panel's own selection + "last N hours" choice — kept
   // in the shared provider (not local state) so its History tab can drive
   // this actual map's trajectory instead of needing an embedded map.
-  const { selectedMmsi, historyHours, historyRequested, closeVessel } = useVesselDetailDialog();
+  const { selectedMmsi, historyHours, historyRequested, historyVesselMmsi, openVessel, closeVessel } =
+    useVesselDetailDialog();
 
   const { data: vesselsResponse, isLoading } = useAllVesselsForMap({
     search: filters.search || undefined,
@@ -46,10 +47,11 @@ export default function MapPage() {
 
   const vessels = useMemo(() => vesselsResponse?.data ?? [], [vesselsResponse]);
 
-  // A vessel opened in the detail panel (from anywhere — this map's own
-  // popup, a table on another page, a fleet roster) takes priority as the
-  // "active" vessel for trajectory purposes; a plain marker click without
-  // opening the panel still flies to/highlights via local state alone.
+  // A vessel opened in the detail panel (from anywhere — a marker click on
+  // this map, a table on another page, a fleet roster) is the "active"
+  // vessel for trajectory/highlight purposes; `selectedVesselId` is a
+  // fallback for the rare case the panel is opened without going through
+  // this map's own marker click at all.
   const sheetVessel = useMemo(
     () => (selectedMmsi ? (vessels.find((v) => v.mmsi === selectedMmsi) ?? null) : null),
     [vessels, selectedMmsi]
@@ -58,11 +60,12 @@ export default function MapPage() {
   const activeVessel = sheetVessel ?? vessels.find((v) => v.id === selectedVesselId) ?? null;
 
   // Only draw the trajectory once the user has actually picked a window in
-  // the History tab (or turned on the "Historical trajectory" toggle) —
-  // simply opening a vessel's detail panel shouldn't draw a dashed line no
-  // one asked for yet.
-  const showTrajectory = historyRequested || filters.showHistorical;
-  const trajectoryHours = sheetVessel ? historyHours : 24;
+  // the History tab (or turned on the "Historical trajectory" toggle) for
+  // the vessel that's currently active — switching to a different vessel
+  // shouldn't keep showing a trajectory that was requested for the last one.
+  const showTrajectory =
+    (historyRequested && historyVesselMmsi === activeVessel?.mmsi) || filters.showHistorical;
+  const trajectoryHours = historyRequested ? historyHours : 24;
 
   // Closing the detail panel should fully release the map's selection too
   // (stop the highlight ring / fly-to-lock), not leave it "stuck" on the
@@ -83,9 +86,15 @@ export default function MapPage() {
     filters.showPredicted ? (activeVessel?.mmsi ?? null) : null
   );
 
-  const handleSelectVessel = useCallback((vessel: VesselWithLatestPosition) => {
-    setSelectedVesselId(vessel.id);
-  }, []);
+  // A single click opens the one vessel-detail panel directly — no separate
+  // preview popup that then links to a second, bigger panel.
+  const handleSelectVessel = useCallback(
+    (vessel: VesselWithLatestPosition) => {
+      setSelectedVesselId(vessel.id);
+      openVessel(vessel.mmsi);
+    },
+    [openVessel]
+  );
 
   function handleChange(patch: Partial<MapFilterState>) {
     setFilters((prev) => ({ ...prev, ...patch }));
@@ -113,14 +122,25 @@ export default function MapPage() {
       />
 
       <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-3">
-        <div className="pointer-events-auto flex justify-between">
-          {isLoading ? (
+        <div className="pointer-events-auto">
+          {isLoading && (
             <div className="h-fit rounded-md border border-border bg-card/95 px-3 py-1.5 text-xs text-muted-foreground shadow-lg backdrop-blur">
               {t("Loading fleet…")}
             </div>
-          ) : (
-            <span />
           )}
+        </div>
+        <div className="pointer-events-auto self-start">
+          <MapLegend />
+        </div>
+      </div>
+
+      {/* `fixed` (not part of the absolute-inset-0 overlay above) and
+          pinned to the viewport, matching VesselDetailSheet's own
+          positioning — this is deliberately independent of the map
+          container's own box so it can never end up affected by Leaflet's
+          layout/zoom recalculations. */}
+      <div className="pointer-events-none fixed top-[4.25rem] right-3 z-[1500]">
+        <div className="pointer-events-auto">
           <MapControlsPanel
             filters={filters}
             onChange={handleChange}
@@ -133,9 +153,6 @@ export default function MapPage() {
             vessels={vessels}
             onSelectVessel={handleSelectVessel}
           />
-        </div>
-        <div className="pointer-events-auto self-start">
-          <MapLegend />
         </div>
       </div>
     </div>
