@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDateTime, formatPercent } from "@/lib/format";
 import { useLocale } from "@/providers/locale-provider";
+import { PredictionHorizonPicker } from "./PredictionHorizonPicker";
 import type { TrajectoryPredictionResult } from "@/types";
 
 /** Reusable trajectory-prediction summary. Same contract regardless of
@@ -24,6 +25,8 @@ export function PredictionPanel({ trajectory }: { trajectory: TrajectoryPredicti
         )}
       </CardHeader>
       <CardContent className="space-y-3">
+        <PredictionHorizonPicker />
+
         <div className="flex gap-6">
           <div>
             <p className="text-xs text-muted-foreground">{t("Horizon")}</p>

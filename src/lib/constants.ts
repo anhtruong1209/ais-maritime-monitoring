@@ -66,3 +66,12 @@ export const TRAJECTORY_WINDOW_OPTIONS = [
   { label: "12h", hours: 12 },
   { label: "24h", hours: 24 },
 ] as const;
+
+export const PREDICTION_HORIZON_OPTIONS = [
+  { label: "30m", minutes: 30 },
+  { label: "1h", minutes: 60 },
+  { label: "2h", minutes: 120 },
+  { label: "3h", minutes: 180 },
+] as const;
+
+export const DEFAULT_PREDICTION_HORIZON_MINUTES = 180;

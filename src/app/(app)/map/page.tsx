@@ -34,8 +34,15 @@ export default function MapPage() {
   // The vessel-detail panel's own selection + "last N hours" choice — kept
   // in the shared provider (not local state) so its History tab can drive
   // this actual map's trajectory instead of needing an embedded map.
-  const { selectedMmsi, historyHours, historyRequested, historyVesselMmsi, openVessel, closeVessel } =
-    useVesselDetailDialog();
+  const {
+    selectedMmsi,
+    historyHours,
+    historyRequested,
+    historyVesselMmsi,
+    predictionHorizonMinutes,
+    openVessel,
+    closeVessel,
+  } = useVesselDetailDialog();
 
   const { data: vesselsResponse, isLoading } = useAllVesselsForMap({
     search: filters.search || undefined,
@@ -88,7 +95,11 @@ export default function MapPage() {
     showTrajectory ? (activeVessel?.mmsi ?? null) : null,
     trajectoryHours
   );
-  const { data: predictions } = usePredictions(showPredicted ? (activeVessel?.mmsi ?? null) : null);
+  const { data: predictions } = usePredictions(
+    showPredicted ? (activeVessel?.mmsi ?? null) : null,
+    null,
+    predictionHorizonMinutes
+  );
 
   // A single click opens the one vessel-detail panel directly — no separate
   // preview popup that then links to a second, bigger panel.

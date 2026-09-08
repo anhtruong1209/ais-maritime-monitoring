@@ -13,11 +13,17 @@ import { usePredictions } from "@/hooks/use-predictions";
 import { useVesselPositions } from "@/hooks/use-vessel-positions";
 import { useAllVesselsForMap } from "@/hooks/use-vessels";
 import { useLocale } from "@/providers/locale-provider";
+import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 
 export default function PredictionsPage() {
   const [mmsi, setMmsi] = useState<string | null>(null);
   const [portId, setPortId] = useState<string | null>(null);
-  const { data: predictions, isLoading, isError } = usePredictions(mmsi, portId);
+  const { predictionHorizonMinutes } = useVesselDetailDialog();
+  const { data: predictions, isLoading, isError } = usePredictions(
+    mmsi,
+    portId,
+    predictionHorizonMinutes
+  );
   const { data: positions } = useVesselPositions(mmsi, 24);
   const { data: vesselsResponse } = useAllVesselsForMap({});
   const vessel = vesselsResponse?.data.find((v) => v.mmsi === mmsi) ?? null;

@@ -16,6 +16,7 @@ import { usePredictions } from "@/hooks/use-predictions";
 import { useVesselPositions } from "@/hooks/use-vessel-positions";
 import { useVesselVoyages } from "@/hooks/use-vessel-voyages";
 import { useLocale } from "@/providers/locale-provider";
+import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import { deriveVesselStatus } from "@/lib/vessel-status";
 
 /**
@@ -31,7 +32,12 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
   const { data: vessel, isLoading: vesselLoading, isError } = useVessel(mmsi);
   const { data: positions } = useVesselPositions(mmsi, 24);
   const { data: voyages } = useVesselVoyages(mmsi);
-  const { data: predictions, isLoading: predictionsLoading } = usePredictions(mmsi);
+  const { predictionHorizonMinutes } = useVesselDetailDialog();
+  const { data: predictions, isLoading: predictionsLoading } = usePredictions(
+    mmsi,
+    null,
+    predictionHorizonMinutes
+  );
   const { t } = useLocale();
 
   if (vesselLoading) {

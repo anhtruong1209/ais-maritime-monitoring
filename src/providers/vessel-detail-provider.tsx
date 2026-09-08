@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { DEFAULT_PREDICTION_HORIZON_MINUTES } from "@/lib/constants";
 
 interface VesselDetailContextValue {
   selectedMmsi: string | null;
@@ -19,6 +20,11 @@ interface VesselDetailContextValue {
    * selecting a *different* vessel invalidate a stale trajectory request
    * left over from whichever vessel was open before. */
   historyVesselMmsi: string | null;
+  /** How far ahead the trajectory prediction looks — shared the same way
+   * as historyHours, so picking a horizon in the detail panel also
+   * changes the predicted route drawn on the actual map. */
+  predictionHorizonMinutes: number;
+  setPredictionHorizonMinutes: (minutes: number) => void;
 }
 
 const VesselDetailContext = createContext<VesselDetailContextValue | null>(null);
@@ -28,6 +34,9 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
   const [historyHours, setHistoryHoursState] = useState(24);
   const [historyRequested, setHistoryRequested] = useState(false);
   const [historyVesselMmsi, setHistoryVesselMmsi] = useState<string | null>(null);
+  const [predictionHorizonMinutes, setPredictionHorizonMinutes] = useState(
+    DEFAULT_PREDICTION_HORIZON_MINUTES
+  );
 
   const openVessel = useCallback(
     (mmsi: string) => {
@@ -61,8 +70,19 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
       setHistoryHours,
       historyRequested,
       historyVesselMmsi,
+      predictionHorizonMinutes,
+      setPredictionHorizonMinutes,
     }),
-    [selectedMmsi, openVessel, closeVessel, historyHours, setHistoryHours, historyRequested, historyVesselMmsi]
+    [
+      selectedMmsi,
+      openVessel,
+      closeVessel,
+      historyHours,
+      setHistoryHours,
+      historyRequested,
+      historyVesselMmsi,
+      predictionHorizonMinutes,
+    ]
   );
 
   return (

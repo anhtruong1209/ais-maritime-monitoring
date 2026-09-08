@@ -3,10 +3,16 @@ import { getPredictionService } from "@/lib/ai";
 import { getVesselByMmsi, getVesselPositions } from "@/lib/data/vessels";
 import { getPorts } from "@/lib/data/ports";
 import { haversineDistanceKm } from "@/lib/geo";
+import { DEFAULT_PREDICTION_HORIZON_MINUTES, PREDICTION_HORIZON_OPTIONS } from "@/lib/constants";
 import { mmsiParamSchema } from "@/lib/validation/vessel";
 import type { Port } from "@/types";
 
-const HORIZON_MINUTES = 180;
+const ALLOWED_HORIZONS: Set<number> = new Set(PREDICTION_HORIZON_OPTIONS.map((o) => o.minutes));
+
+function resolveHorizonMinutes(raw: string | null): number {
+  const parsed = raw ? Number(raw) : NaN;
+  return ALLOWED_HORIZONS.has(parsed) ? parsed : DEFAULT_PREDICTION_HORIZON_MINUTES;
+}
 
 function resolveDestinationPort(
   ports: Port[],
@@ -42,6 +48,7 @@ export async function GET(
   // for ("if it were headed to X, when would it arrive") instead of the
   // vessel's own AIS-reported destination.
   const portId = request.nextUrl.searchParams.get("portId");
+  const horizonMinutes = resolveHorizonMinutes(request.nextUrl.searchParams.get("horizonMinutes"));
 
   try {
     const vessel = await getVesselByMmsi(parsed.data);
@@ -67,7 +74,7 @@ export async function GET(
       service.predictTrajectory({
         vesselId: vessel.id,
         recentPositions,
-        horizonMinutes: HORIZON_MINUTES,
+        horizonMinutes,
       }),
       service.predictEta({
         vesselId: vessel.id,
