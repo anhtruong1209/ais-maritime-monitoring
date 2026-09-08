@@ -249,6 +249,7 @@ export function MaritimeMapInner({
             longitude: v.latestPosition!.longitude,
             intensity: v.status === "moving" ? 1 : 0.5,
           }))}
+          zoomInTarget={HEATMAP_ZOOM_THRESHOLD + 2}
         />
       ) : cluster ? (
         <MarkerClusterGroup chunkedLoading maxClusterRadius={50} spiderfyOnMaxZoom>

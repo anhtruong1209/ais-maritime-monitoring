@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "leaflet/dist/leaflet.css";
+@import "leaflet.markercluster/dist/MarkerCluster.css";
+@import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 @import "maplibre-gl/dist/maplibre-gl.css";
 
 @custom-variant dark (&:is(.dark *));
@@ -173,6 +175,24 @@
 .anomaly-marker-icon {
   background: transparent;
   border: none;
+}
+
+/* Re-theme leaflet.markercluster's default yellow/orange bubbles to the
+   app's blue accent, and make sure the count text is actually legible
+   (the stock theme relies on a dark page background). */
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background-color: rgba(3, 105, 161, 0.18);
+}
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background-color: rgba(3, 105, 161, 0.75);
+}
+.marker-cluster span {
+  color: #ffffff;
+  font-weight: 600;
 }
 
 /* "Marching ants" effect on the AI-predicted route, so it visually reads

@@ -18,7 +18,10 @@ const DEFAULT_FILTERS: MapFilterState = {
   shipType: ALL,
   status: ALL,
   tileLayerId: DEFAULT_TILE_LAYER_ID,
-  showHistorical: true,
+  // Off by default: fetching + drawing a track on every single vessel
+  // click is wasted work most of the time. The user turns it on (the
+  // "Historical trajectory" switch) only when they actually want it.
+  showHistorical: false,
   showPredicted: false,
   showAnomalies: true,
 };

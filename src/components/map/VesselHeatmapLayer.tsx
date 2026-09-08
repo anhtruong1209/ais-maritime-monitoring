@@ -1,7 +1,7 @@
 import "leaflet.heat";
 import L from "leaflet";
 import { useEffect } from "react";
-import { useMap } from "react-leaflet";
+import { useMap, useMapEvents } from "react-leaflet";
 
 export interface HeatPoint {
   latitude: number;
@@ -16,8 +16,18 @@ export interface HeatPoint {
  * icons would be unreadable and expensive to render. Swaps back to real
  * markers once zoomed in far enough to make individual vessels legible
  * (see HEATMAP_ZOOM_THRESHOLD in MaritimeMapInner.tsx).
+ *
+ * Clicking anywhere on the heatmap zooms into that spot — there's nothing
+ * to click as an individual marker yet, so a click is read as "drill into
+ * this area" rather than "select this vessel".
  */
-export function VesselHeatmapLayer({ points }: { points: HeatPoint[] }) {
+export function VesselHeatmapLayer({
+  points,
+  zoomInTarget,
+}: {
+  points: HeatPoint[];
+  zoomInTarget: number;
+}) {
   const map = useMap();
 
   useEffect(() => {
@@ -30,6 +40,10 @@ export function VesselHeatmapLayer({ points }: { points: HeatPoint[] }) {
       heat.remove();
     };
   }, [map, points]);
+
+  useMapEvents({
+    click: (e) => map.flyTo(e.latlng, zoomInTarget, { duration: 0.6 }),
+  });
 
   return null;
 }

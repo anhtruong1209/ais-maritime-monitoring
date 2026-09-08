@@ -20,7 +20,7 @@ interface VesselIconOptions {
 // reads clearly instead of collapsing to an undirected dot.
 function vesselSvg({ shipType, cog, selected, moving, flagged }: VesselIconOptions) {
   const color = SHIP_TYPE_COLORS[shipType];
-  const size = selected ? 34 : 26;
+  const size = selected ? 26 : 20;
   const strokeWidth = selected ? 2.5 : 1.75;
   const opacity = moving ? 1 : 0.75;
 
@@ -40,7 +40,7 @@ function vesselSvg({ shipType, cog, selected, moving, flagged }: VesselIconOptio
 }
 
 export function createVesselIcon(options: VesselIconOptions): L.DivIcon {
-  const size = options.selected ? 34 : 26;
+  const size = options.selected ? 26 : 20;
   return L.divIcon({
     html: vesselSvg(options),
     className: "vessel-marker-icon",
