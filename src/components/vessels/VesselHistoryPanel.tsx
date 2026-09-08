@@ -13,13 +13,17 @@ import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
  * map doesn't already show better.
  */
 export function VesselHistoryPanel({ mmsi }: { mmsi: string }) {
-  const { historyHours, setHistoryHours } = useVesselDetailDialog();
+  const { historyHours, historyRequested, historyVesselMmsi, setHistoryHours } =
+    useVesselDetailDialog();
   const { t } = useLocale();
 
   return (
     <div className="flex flex-wrap gap-1.5">
       {TRAJECTORY_WINDOW_OPTIONS.map((opt) => {
-        const active = historyHours === opt.hours;
+        // No button starts "selected" — historyHours has a default value,
+        // but nothing should look chosen until the user actually picks one.
+        const active =
+          historyRequested && historyVesselMmsi === mmsi && historyHours === opt.hours;
         return (
           <button
             key={opt.hours}
