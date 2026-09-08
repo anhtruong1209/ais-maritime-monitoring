@@ -388,7 +388,14 @@ function pointAtDistance(waypoints, distKm) {
   return { lat: last.lat, lon: last.lon };
 }
 
-const NOW = new Date("2026-09-07T08:00:00Z").getTime();
+// Anchored to the actual run time (not a hardcoded date) so a freshly
+// generated/reseeded dataset always has its "latest" AIS fix be recent —
+// a fixed past date here means every vessel silently ages into "offline"
+// (see OFFLINE_THRESHOLD_MINUTES) the further real time drifts past it.
+// The RNG seed above is still fixed, so the scenario itself (routes,
+// voyage states, anomaly placement) stays reproducible across runs; only
+// its position in time shifts to "now".
+const NOW = Date.now();
 
 /**
  * Builds a sequence of AIS fixes for one voyage leg along `waypoints`,
