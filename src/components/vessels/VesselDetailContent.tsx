@@ -8,29 +8,35 @@ import { CurrentAisCard } from "./CurrentAisCard";
 import { VesselVoyagesCard } from "./VesselVoyagesCard";
 import { VesselTrajectoryMap } from "./VesselTrajectoryMap";
 import { RecentAisMessagesPanel } from "./RecentAisMessagesPanel";
+import { EtaCard } from "@/components/predictions/EtaCard";
+import { PredictionPanel } from "@/components/predictions/PredictionPanel";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVessel } from "@/hooks/use-vessel";
+import { usePredictions } from "@/hooks/use-predictions";
 import { useVesselPositions } from "@/hooks/use-vessel-positions";
 import { useVesselVoyages } from "@/hooks/use-vessel-voyages";
 import { deriveVesselStatus } from "@/lib/vessel-status";
 
 /**
- * Self-contained vessel detail body — fetches everything it needs from
- * `mmsi` via client hooks. Used both by the /vessels/[mmsi] page and by
- * VesselDetailDialog, so "view detail" behaves the same whether it's
- * opened as a modal (the default, from tables/map/fleets) or navigated to
- * directly (a shareable URL).
+ * Everything about one vessel — current AIS, voyages, historical
+ * trajectory, AI prediction, and static particulars — in a single tabbed
+ * panel. This is the only place vessel detail lives: it's rendered inside
+ * VesselDetailSheet (a side panel, opened over whatever page/map you were
+ * already on) rather than as a separate route, so opening it never
+ * unmounts the map or re-fetches the fleet.
  */
 export function VesselDetailContent({ mmsi }: { mmsi: string }) {
   const { data: vessel, isLoading: vesselLoading, isError } = useVessel(mmsi);
   const { data: positions } = useVesselPositions(mmsi, 24);
   const { data: voyages } = useVesselVoyages(mmsi);
+  const { data: predictions, isLoading: predictionsLoading } = usePredictions(mmsi);
 
   if (vesselLoading) {
     return (
-      <div className="grid gap-4 p-4 lg:grid-cols-3">
-        <Skeleton className="h-64 lg:col-span-1" />
-        <Skeleton className="h-96 lg:col-span-2" />
+      <div className="space-y-4 p-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-64 w-full" />
       </div>
     );
   }
@@ -47,30 +53,55 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
   const latest = positions?.at(-1) ?? null;
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="flex h-full flex-col">
+      <div className="flex flex-wrap items-center gap-3 border-b border-border p-4">
         <h1 className="text-lg font-semibold">{vessel.name}</h1>
         <ShipTypeBadge shipType={vessel.shipType} />
         <VesselStatusBadge status={deriveVesselStatus(latest)} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4">
-          <VesselInfoCard vessel={vessel} />
+      <Tabs defaultValue="current" className="min-h-0 flex-1">
+        <TabsList className="mx-4 mt-3">
+          <TabsTrigger value="current">Hiện tại</TabsTrigger>
+          <TabsTrigger value="history">Lịch sử</TabsTrigger>
+          <TabsTrigger value="predictions">Dự đoán</TabsTrigger>
+          <TabsTrigger value="particulars">Thông số</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="current" className="space-y-4 overflow-y-auto p-4">
           <CurrentAisCard position={latest} />
           <VesselVoyagesCard voyages={voyages ?? []} />
-        </div>
+        </TabsContent>
 
-        <div className="space-y-4 lg:col-span-2">
-          <div className="h-96 overflow-hidden rounded-md border border-border">
+        <TabsContent value="history" className="flex h-full flex-col gap-4 overflow-y-auto p-4">
+          <div className="h-80 shrink-0 overflow-hidden rounded-md border border-border">
             <VesselTrajectoryMap vessel={vessel} initialPositions={positions ?? []} />
           </div>
           <div>
             <h2 className="mb-2 text-sm font-medium">Recent AIS Messages</h2>
             <RecentAisMessagesPanel mmsi={mmsi} />
           </div>
-        </div>
-      </div>
+        </TabsContent>
+
+        <TabsContent value="predictions" className="space-y-4 overflow-y-auto p-4">
+          {predictionsLoading && <Skeleton className="h-56 w-full" />}
+          {!predictionsLoading && !predictions && (
+            <p className="text-sm text-muted-foreground">
+              No AIS data available to generate a prediction for this vessel.
+            </p>
+          )}
+          {predictions && (
+            <>
+              <PredictionPanel trajectory={predictions.trajectory} />
+              <EtaCard eta={predictions.eta} />
+            </>
+          )}
+        </TabsContent>
+
+        <TabsContent value="particulars" className="overflow-y-auto p-4">
+          <VesselInfoCard vessel={vessel} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

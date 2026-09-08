@@ -1,9 +1,11 @@
-import Link from "next/link";
+"use client";
+
 import { Marker, Popup } from "react-leaflet";
 import { SeverityBadge } from "@/components/alerts/SeverityBadge";
 import { ANOMALY_TYPE_LABELS } from "@/lib/constants";
 import { formatRelativeTime } from "@/lib/format";
 import { createAnomalyIcon } from "@/lib/map/icons";
+import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import type { AnomalyWithVessel } from "@/types";
 
 /**
@@ -12,6 +14,8 @@ import type { AnomalyWithVessel } from "@/types";
  * something you see, not just a row in a table.
  */
 export function AnomalyMarkerLayer({ anomalies }: { anomalies: AnomalyWithVessel[] }) {
+  const { openVessel } = useVesselDetailDialog();
+
   return (
     <>
       {anomalies.map((anomaly) => (
@@ -33,12 +37,13 @@ export function AnomalyMarkerLayer({ anomalies }: { anomalies: AnomalyWithVessel
               <p className="text-xs text-muted-foreground">
                 Detected {formatRelativeTime(anomaly.detectedAt)}
               </p>
-              <Link
-                href={`/vessels/${anomaly.vesselMmsi}`}
+              <button
+                type="button"
+                onClick={() => openVessel(anomaly.vesselMmsi)}
                 className="inline-block pt-1 font-medium text-primary underline-offset-2 hover:underline"
               >
                 {anomaly.vesselName} — Chi tiết →
-              </Link>
+              </button>
             </div>
           </Popup>
         </Marker>

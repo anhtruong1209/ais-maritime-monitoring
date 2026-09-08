@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Menu, Radar, Search } from "lucide-react";
+import { Menu, PanelLeft, Radar, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,11 +12,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useSidebar } from "@/providers/sidebar-provider";
 import { AppSidebar } from "./AppSidebar";
 
 export function AppHeader() {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const { toggle: toggleSidebar } = useSidebar();
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -35,6 +37,16 @@ export function AppHeader() {
           <AppSidebar />
         </SheetContent>
       </Sheet>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        className="hidden md:flex"
+        onClick={toggleSidebar}
+        aria-label="Toggle sidebar"
+      >
+        <PanelLeft className="size-5" />
+      </Button>
 
       <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight">
         <Radar className="size-5 text-primary" strokeWidth={2.2} />

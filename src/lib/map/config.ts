@@ -53,14 +53,9 @@ function openFreeMapLayer(id: string, name: string, style: string): VectorTileLa
 }
 
 export const TILE_LAYERS: TileLayerConfig[] = [
-  openFreeMapLayer("vn-bright", "Bright (Vietnamese labels)", "bright"),
-  openFreeMapLayer("vn-liberty", "Liberty (Vietnamese labels)", "liberty"),
-  openFreeMapLayer("vn-fiord", "Fiord — blue (Vietnamese labels)", "fiord"),
-  openFreeMapLayer("vn-dark", "Dark (Vietnamese labels)", "dark"),
-  openFreeMapLayer("vn-positron", "Positron — pale (Vietnamese labels)", "positron"),
   {
     id: "osm-standard",
-    name: "OpenStreetMap (raster)",
+    name: "OpenStreetMap",
     type: "raster",
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     attribution:
@@ -69,7 +64,7 @@ export const TILE_LAYERS: TileLayerConfig[] = [
   },
   {
     id: "osm-humanitarian",
-    name: "Humanitarian (HOT, raster)",
+    name: "Humanitarian (HOT)",
     type: "raster",
     url: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
     attribution:
@@ -78,7 +73,7 @@ export const TILE_LAYERS: TileLayerConfig[] = [
   },
   {
     id: "esri-satellite",
-    name: "Satellite (Esri, raster)",
+    name: "Satellite (Esri)",
     type: "raster",
     // Esri's public World Imagery service — free for general/non-commercial
     // use with no API key. Useful to visually confirm a vessel's reported
@@ -90,19 +85,27 @@ export const TILE_LAYERS: TileLayerConfig[] = [
   },
   {
     id: "opentopomap",
-    name: "Terrain (OpenTopoMap, raster)",
+    name: "Terrain (OpenTopoMap)",
     type: "raster",
     url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)',
     maxZoom: 17,
   },
+  // Experimental: vector basemaps with Vietnamese-preferred labels (see
+  // preferVietnameseLabels() in ./vietnamese-style.ts). Currently rendering
+  // background-only (land/water/road layers not showing) — suspected
+  // maplibre-gl v6 vs. @maplibre/maplibre-gl-leaflet@0.1.4 incompatibility,
+  // not yet root-caused. Left in the picker as opt-in, NOT the default,
+  // until that's fixed — the raster layers above are the reliable ones.
+  openFreeMapLayer("vn-bright", "Bright — vector, experimental", "bright"),
+  openFreeMapLayer("vn-liberty", "Liberty — vector, experimental", "liberty"),
+  openFreeMapLayer("vn-fiord", "Fiord — vector, experimental", "fiord"),
+  openFreeMapLayer("vn-dark", "Dark — vector, experimental", "dark"),
+  openFreeMapLayer("vn-positron", "Positron — vector, experimental", "positron"),
 ];
 
-// "Bright" over "Liberty"/"Positron": noticeably more color contrast
-// between land/water/roads at a glance, which was the whole point of
-// offering more options — "the plain white one is hard to read".
-export const DEFAULT_TILE_LAYER_ID = "vn-bright";
+export const DEFAULT_TILE_LAYER_ID = "osm-standard";
 
 // Centered on the East Sea / South China Sea off central Vietnam so the
 // mainland coastline, Hoang Sa, and Truong Sa are all visible by default.
