@@ -173,10 +173,17 @@ export function MaritimeMapInner({
 }: MaritimeMapProps) {
   const tileLayer = TILE_LAYERS.find((t) => t.id === tileLayerId) ?? TILE_LAYERS[0];
   const selected = vessels.find((v) => v.id === selectedVesselId);
-  const selectedLatLng: LatLngTuple | null =
-    selected?.latestPosition != null
-      ? [selected.latestPosition.latitude, selected.latestPosition.longitude]
-      : null;
+  const selectedLat = selected?.latestPosition?.latitude ?? null;
+  const selectedLng = selected?.latestPosition?.longitude ?? null;
+  // Memoized on the actual coordinates (not a fresh `[lat, lng]` literal
+  // every render) — otherwise FlyToSelection's effect, which depends on
+  // this reference, re-fires on every unrelated re-render (e.g. the zoom
+  // state tracked below), snapping the map back to the selected vessel
+  // every time the user tries to zoom out past it.
+  const selectedLatLng: LatLngTuple | null = useMemo(
+    () => (selectedLat != null && selectedLng != null ? [selectedLat, selectedLng] : null),
+    [selectedLat, selectedLng]
+  );
   const flaggedVesselIds = useMemo(
     () => new Set(anomalies.map((a) => a.vesselId)),
     [anomalies]
@@ -189,6 +196,20 @@ export function MaritimeMapInner({
   const [currentZoom, setCurrentZoom] = useState(zoom);
   const showHeatmap =
     vesselsWithPosition.length >= HEATMAP_MIN_VESSELS && currentZoom < HEATMAP_ZOOM_THRESHOLD;
+
+  // Memoized so the heat layer (which tears down and rebuilds its canvas
+  // whenever this array's reference changes — see VesselHeatmapLayer) isn't
+  // recreated on every render a pure zoom-level change causes — that
+  // rebuild-on-every-tick was the "jumps around while zooming" jank.
+  const heatPoints = useMemo(
+    () =>
+      vesselsWithPosition.map((v) => ({
+        latitude: v.latestPosition!.latitude,
+        longitude: v.latestPosition!.longitude,
+        intensity: v.status === "moving" ? 1 : 0.5,
+      })),
+    [vesselsWithPosition]
+  );
 
   // Deliberately does NOT depend on selectedVesselId — see SelectionRing's
   // comment above. Only actual vessel/anomaly data changes rebuild this.
@@ -255,14 +276,7 @@ export function MaritimeMapInner({
       ))}
 
       {showHeatmap ? (
-        <VesselHeatmapLayer
-          points={vesselsWithPosition.map((v) => ({
-            latitude: v.latestPosition!.latitude,
-            longitude: v.latestPosition!.longitude,
-            intensity: v.status === "moving" ? 1 : 0.5,
-          }))}
-          zoomInTarget={HEATMAP_ZOOM_THRESHOLD + 2}
-        />
+        <VesselHeatmapLayer points={heatPoints} zoomInTarget={HEATMAP_ZOOM_THRESHOLD + 2} />
       ) : cluster ? (
         <MarkerClusterGroup chunkedLoading maxClusterRadius={50} spiderfyOnMaxZoom>
           {markers}

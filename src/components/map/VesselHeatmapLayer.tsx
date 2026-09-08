@@ -36,6 +36,13 @@ export function VesselHeatmapLayer({
       { radius: 18, blur: 22, maxZoom: 10, minOpacity: 0.35 }
     );
     heat.addTo(map);
+    // leaflet.heat's canvas doesn't participate in Leaflet's zoom-animation
+    // transform the way tile/vector layers do, so without this it visibly
+    // jumps mid-animation instead of smoothly scaling — `leaflet-zoom-hide`
+    // is a class Leaflet's own core CSS/JS already knows to fade out during
+    // the zoom animation and back in once it's redrawn at the new zoom.
+    const canvas = (heat as unknown as { _canvas?: HTMLElement })._canvas;
+    canvas?.classList.add("leaflet-zoom-hide");
     return () => {
       heat.remove();
     };

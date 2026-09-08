@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MapCanvas } from "@/components/map/MapCanvas";
 import { MapControlsPanel, type MapFilterState } from "@/components/map/MapControlsPanel";
 import { MapLegend } from "@/components/map/MapLegend";
@@ -34,7 +34,7 @@ export default function MapPage() {
   // The vessel-detail panel's own selection + "last N hours" choice — kept
   // in the shared provider (not local state) so its History tab can drive
   // this actual map's trajectory instead of needing an embedded map.
-  const { selectedMmsi, historyHours } = useVesselDetailDialog();
+  const { selectedMmsi, historyHours, historyRequested, closeVessel } = useVesselDetailDialog();
 
   const { data: vesselsResponse, isLoading } = useAllVesselsForMap({
     search: filters.search || undefined,
@@ -57,8 +57,23 @@ export default function MapPage() {
   const activeVesselId = sheetVessel?.id ?? selectedVesselId;
   const activeVessel = sheetVessel ?? vessels.find((v) => v.id === selectedVesselId) ?? null;
 
-  const showTrajectory = Boolean(sheetVessel) || filters.showHistorical;
+  // Only draw the trajectory once the user has actually picked a window in
+  // the History tab (or turned on the "Historical trajectory" toggle) —
+  // simply opening a vessel's detail panel shouldn't draw a dashed line no
+  // one asked for yet.
+  const showTrajectory = historyRequested || filters.showHistorical;
   const trajectoryHours = sheetVessel ? historyHours : 24;
+
+  // Closing the detail panel should fully release the map's selection too
+  // (stop the highlight ring / fly-to-lock), not leave it "stuck" on the
+  // vessel that was open.
+  const prevMmsiRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (prevMmsiRef.current && !selectedMmsi) {
+      setSelectedVesselId(null);
+    }
+    prevMmsiRef.current = selectedMmsi;
+  }, [selectedMmsi]);
 
   const { data: positions } = useVesselPositions(
     showTrajectory ? (activeVessel?.mmsi ?? null) : null,
@@ -111,7 +126,10 @@ export default function MapPage() {
             onChange={handleChange}
             onReset={handleReset}
             selectedVesselName={activeVessel?.name}
-            onClearSelection={() => setSelectedVesselId(null)}
+            onClearSelection={() => {
+              setSelectedVesselId(null);
+              closeVessel();
+            }}
             vessels={vessels}
             onSelectVessel={handleSelectVessel}
           />

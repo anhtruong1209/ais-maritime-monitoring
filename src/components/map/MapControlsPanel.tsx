@@ -145,29 +145,52 @@ export function MapControlsPanel({
     placeholder: t("Search vessel name or MMSI…"),
   };
 
+  // Always reachable — regardless of whether the config panel is expanded
+  // — so a selected vessel can be cleared (stopping its highlight/fly-to)
+  // without first having to open the panel to find the clear button.
+  const selectedChip = selectedVesselName && (
+    <div className="flex items-center gap-1.5 rounded-md border border-border bg-card/95 py-1 pr-1 pl-2.5 text-xs shadow-lg backdrop-blur">
+      <span className="max-w-40 truncate font-medium">{selectedVesselName}</span>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="size-6"
+        onClick={onClearSelection}
+        aria-label={t("Clear selection")}
+      >
+        <X className="size-3.5" />
+      </Button>
+    </div>
+  );
+
   if (!open) {
     return (
-      <div className="flex items-start gap-2">
-        <VesselSearchBox
-          {...searchProps}
-          className="w-64"
-          inputClassName="border-border bg-card/95 shadow-lg backdrop-blur"
-        />
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-10 w-10 shrink-0 border-border bg-card/95 shadow-lg backdrop-blur"
-          onClick={() => setOpen(true)}
-          aria-label={t("Basemap")}
-        >
-          <SlidersHorizontal className="size-4" />
-        </Button>
+      <div className="flex flex-col items-end gap-2">
+        {selectedChip}
+        <div className="flex items-start gap-2">
+          <VesselSearchBox
+            {...searchProps}
+            className="w-64"
+            inputClassName="border-border bg-card/95 shadow-lg backdrop-blur"
+          />
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-10 w-10 shrink-0 border-border bg-card/95 shadow-lg backdrop-blur"
+            onClick={() => setOpen(true)}
+            aria-label={t("Basemap")}
+          >
+            <SlidersHorizontal className="size-4" />
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-80 space-y-3.5 rounded-md border border-border bg-card/95 p-4 text-sm shadow-lg backdrop-blur">
+    <div className="flex flex-col items-end gap-2">
+      {selectedChip}
+      <div className="w-80 space-y-3.5 rounded-md border border-border bg-card/95 p-4 text-sm shadow-lg backdrop-blur">
       <div className="flex items-center justify-between">
         <VesselSearchBox {...searchProps} className="flex-1" />
         <Button
@@ -256,18 +279,10 @@ export function MapControlsPanel({
         </label>
       </div>
 
-      {selectedVesselName && (
-        <div className="flex items-center justify-between rounded bg-secondary px-2 py-1.5 text-xs">
-          <span className="truncate font-medium">{selectedVesselName}</span>
-          <Button variant="ghost" size="icon" className="size-5" onClick={onClearSelection}>
-            <X className="size-3.5" />
-          </Button>
-        </div>
-      )}
-
       <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={onReset}>
         <RotateCcw className="size-3.5" /> {t("Reset view")}
       </Button>
+      </div>
     </div>
   );
 }

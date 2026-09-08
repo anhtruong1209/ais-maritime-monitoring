@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useState } from "react";
 
 interface VesselDetailContextValue {
   selectedMmsi: string | null;
@@ -11,23 +11,46 @@ interface VesselDetailContextValue {
    * actual map instead of the panel needing its own embedded map. */
   historyHours: number;
   setHistoryHours: (hours: number) => void;
+  /** True only once the user has actually picked a window in the History
+   * tab (not merely because a vessel is selected/open) — the map should
+   * stay clean until the user asks to see a trajectory, not draw one the
+   * moment a vessel's detail panel opens. Resets whenever the panel opens
+   * a (possibly different) vessel or closes. */
+  historyRequested: boolean;
 }
 
 const VesselDetailContext = createContext<VesselDetailContextValue | null>(null);
 
 export function VesselDetailProvider({ children }: { children: React.ReactNode }) {
   const [selectedMmsi, setSelectedMmsi] = useState<string | null>(null);
-  const [historyHours, setHistoryHours] = useState(24);
+  const [historyHours, setHistoryHoursState] = useState(24);
+  const [historyRequested, setHistoryRequested] = useState(false);
+
+  const openVessel = useCallback((mmsi: string) => {
+    setSelectedMmsi(mmsi);
+    setHistoryRequested(false);
+  }, []);
+
+  const closeVessel = useCallback(() => {
+    setSelectedMmsi(null);
+    setHistoryRequested(false);
+  }, []);
+
+  const setHistoryHours = useCallback((hours: number) => {
+    setHistoryHoursState(hours);
+    setHistoryRequested(true);
+  }, []);
 
   const value = useMemo(
     () => ({
       selectedMmsi,
-      openVessel: setSelectedMmsi,
-      closeVessel: () => setSelectedMmsi(null),
+      openVessel,
+      closeVessel,
       historyHours,
       setHistoryHours,
+      historyRequested,
     }),
-    [selectedMmsi, historyHours]
+    [selectedMmsi, openVessel, closeVessel, historyHours, setHistoryHours, historyRequested]
   );
 
   return (

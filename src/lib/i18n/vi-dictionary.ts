@@ -22,6 +22,7 @@ export const VI_DICTIONARY: Record<string, string> = {
   Previous: "Trước",
   Next: "Sau",
   "Reset view": "Đặt lại góc nhìn",
+  "Clear selection": "Bỏ chọn tàu",
   "View details": "Xem chi tiết",
   "Chi tiết / View Details": "Chi tiết",
   Close: "Đóng",
