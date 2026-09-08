@@ -30,7 +30,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`dark ${fontSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fontSans.variable} ${geistMono.variable} h-full antialiased`}
+      // The app is single-theme (light) now, so the `dark` class is gone —
+      // it was a leftover from the earlier dark palette and did nothing
+      // once .dark and :root held the same colors. suppressHydrationWarning
+      // is for a separate, unrelated class of warning: browser extensions
+      // (Dark Reader, translators, etc.) commonly inject attributes into
+      // <html> before hydration, which React then flags as a mismatch even
+      // though it's not something this app's code caused.
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <QueryProvider>

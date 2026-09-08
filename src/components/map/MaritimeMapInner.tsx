@@ -23,6 +23,7 @@ import { AnomalyMarkerLayer } from "./AnomalyMarkerLayer";
 import { PredictedRouteLayer } from "./PredictedRouteLayer";
 import { TrajectoryLayer } from "./TrajectoryLayer";
 import { VectorBasemapLayer } from "./VectorBasemapLayer";
+import { VesselHeatmapLayer } from "./VesselHeatmapLayer";
 import { VesselPopupContent } from "./VesselPopup";
 import type {
   AISPosition,
@@ -31,6 +32,13 @@ import type {
   PredictedPoint,
   VesselWithLatestPosition,
 } from "@/types";
+
+// Below this zoom, a fleet-sized set of vessels draws as a density heatmap
+// instead of individual markers — hundreds of overlapping icons at a
+// zoomed-out view are both unreadable and expensive to render. Above it,
+// real markers (clustered) take over so individual vessels are legible.
+const HEATMAP_ZOOM_THRESHOLD = 7;
+const HEATMAP_MIN_VESSELS = 150;
 
 export interface MaritimeMapProps {
   vessels: VesselWithLatestPosition[];
@@ -50,6 +58,14 @@ export interface MaritimeMapProps {
   resetSignal?: number;
 }
 
+/** Reports zoom changes to a parent that isn't itself inside the map's
+ * context (MaritimeMapInner renders <MapContainer>, so it can't call
+ * useMap()/useMapEvents() directly — this bridges that). */
+function ZoomTracker({ onZoomChange }: { onZoomChange: (zoom: number) => void }) {
+  useMapEvents({ zoomend: (e) => onZoomChange(e.target.getZoom()) });
+  return null;
+}
+
 function FlyToSelection({ target }: { target: LatLngTuple | null }) {
   const map = useMap();
   useEffect(() => {
@@ -61,11 +77,18 @@ function FlyToSelection({ target }: { target: LatLngTuple | null }) {
 /** MarineTraffic-style bottom-right readout: cursor lat/lon + zoom level. */
 function MapReadout() {
   const [latLng, setLatLng] = useState<{ lat: number; lng: number } | null>(null);
-  const map = useMapEvents({
+  // Zoom is tracked via the 'zoomend' event rather than calling
+  // map.getZoom() on every render: a render-time call can fire after the
+  // map has been torn down (e.g. this map was inside a dialog that just
+  // closed) and throw, which crashes the whole tree instead of just this
+  // readout. Event-driven reads only ever fire while the map is alive.
+  const map = useMap();
+  const [zoom, setZoom] = useState(() => map.getZoom());
+  useMapEvents({
     mousemove: (e) => setLatLng(e.latlng),
     mouseout: () => setLatLng(null),
+    zoomend: () => setZoom(map.getZoom()),
   });
-  const zoom = map.getZoom();
 
   return (
     <div className="pointer-events-none absolute right-2 bottom-2 z-[1000] rounded border border-border bg-card/90 px-2.5 py-1 font-mono text-xs text-muted-foreground shadow backdrop-blur">
@@ -155,31 +178,34 @@ export function MaritimeMapInner({
       : null;
   const flaggedVesselIds = new Set(anomalies.map((a) => a.vesselId));
 
-  const markers = vessels
-    .filter((v) => v.latestPosition)
-    .map((vessel) => {
-      const pos = vessel.latestPosition!;
-      return (
-        <Marker
-          key={vessel.id}
-          position={[pos.latitude, pos.longitude]}
-          icon={createVesselIcon({
-            shipType: vessel.shipType,
-            cog: pos.cog,
-            selected: vessel.id === selectedVesselId,
-            moving: vessel.status === "moving",
-            flagged: flaggedVesselIds.has(vessel.id),
-          })}
-          eventHandlers={{
-            click: () => onSelectVessel?.(vessel),
-          }}
-        >
-          <Popup>
-            <VesselPopupContent vessel={vessel} />
-          </Popup>
-        </Marker>
-      );
-    });
+  const vesselsWithPosition = vessels.filter((v) => v.latestPosition);
+  const [currentZoom, setCurrentZoom] = useState(zoom);
+  const showHeatmap =
+    vesselsWithPosition.length >= HEATMAP_MIN_VESSELS && currentZoom < HEATMAP_ZOOM_THRESHOLD;
+
+  const markers = vesselsWithPosition.map((vessel) => {
+    const pos = vessel.latestPosition!;
+    return (
+      <Marker
+        key={vessel.id}
+        position={[pos.latitude, pos.longitude]}
+        icon={createVesselIcon({
+          shipType: vessel.shipType,
+          cog: pos.cog,
+          selected: vessel.id === selectedVesselId,
+          moving: vessel.status === "moving",
+          flagged: flaggedVesselIds.has(vessel.id),
+        })}
+        eventHandlers={{
+          click: () => onSelectVessel?.(vessel),
+        }}
+      >
+        <Popup>
+          <VesselPopupContent vessel={vessel} />
+        </Popup>
+      </Marker>
+    );
+  });
 
   return (
     <MapContainer
@@ -216,7 +242,15 @@ export function MaritimeMapInner({
         </Marker>
       ))}
 
-      {cluster ? (
+      {showHeatmap ? (
+        <VesselHeatmapLayer
+          points={vesselsWithPosition.map((v) => ({
+            latitude: v.latestPosition!.latitude,
+            longitude: v.latestPosition!.longitude,
+            intensity: v.status === "moving" ? 1 : 0.5,
+          }))}
+        />
+      ) : cluster ? (
         <MarkerClusterGroup chunkedLoading maxClusterRadius={50} spiderfyOnMaxZoom>
           {markers}
         </MarkerClusterGroup>
@@ -233,6 +267,7 @@ export function MaritimeMapInner({
       <ScaleControl />
       <MapReadout />
       <MapResizeHandler />
+      <ZoomTracker onZoomChange={setCurrentZoom} />
     </MapContainer>
   );
 }

@@ -76,6 +76,27 @@ export const TILE_LAYERS: TileLayerConfig[] = [
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, tiles by HOT',
     maxZoom: 19,
   },
+  {
+    id: "esri-satellite",
+    name: "Satellite (Esri, raster)",
+    type: "raster",
+    // Esri's public World Imagery service — free for general/non-commercial
+    // use with no API key. Useful to visually confirm a vessel's reported
+    // position against real coastline/port imagery.
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attribution:
+      "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+    maxZoom: 19,
+  },
+  {
+    id: "opentopomap",
+    name: "Terrain (OpenTopoMap, raster)",
+    type: "raster",
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)',
+    maxZoom: 17,
+  },
 ];
 
 // "Bright" over "Liberty"/"Positron": noticeably more color contrast
