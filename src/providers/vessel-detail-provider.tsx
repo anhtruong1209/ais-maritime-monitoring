@@ -46,20 +46,18 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
   const [predictionRequested, setPredictionRequested] = useState(false);
   const [predictionVesselMmsi, setPredictionVesselMmsi] = useState<string | null>(null);
 
-  const openVessel = useCallback(
-    (mmsi: string) => {
-      setSelectedMmsi(mmsi);
-      // Switching to a different vessel invalidates any trajectory/
-      // prediction that was requested for the previous one.
-      if (historyVesselMmsi !== mmsi) {
-        setHistoryRequested(false);
-      }
-      if (predictionVesselMmsi !== mmsi) {
-        setPredictionRequested(false);
-      }
-    },
-    [historyVesselMmsi, predictionVesselMmsi]
-  );
+  const openVessel = useCallback((mmsi: string) => {
+    setSelectedMmsi(mmsi);
+    // Always start clean — comparing against the last-requested vessel's
+    // mmsi to decide whether to reset was fragile (stale closures over
+    // openVessel's own dependency array could carry a request over to a
+    // vessel that never asked for it). Unconditionally resetting is
+    // simpler and correct: the rare case of reselecting the exact same
+    // vessel while its panel is already open just means re-picking a
+    // window, which is a fine cost for a bug-free default.
+    setHistoryRequested(false);
+    setPredictionRequested(false);
+  }, []);
 
   const closeVessel = useCallback(() => {
     setSelectedMmsi(null);
