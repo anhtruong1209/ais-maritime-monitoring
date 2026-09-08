@@ -6,8 +6,7 @@ import { VesselStatusBadge } from "./VesselStatusBadge";
 import { VesselInfoCard } from "./VesselInfoCard";
 import { CurrentAisCard } from "./CurrentAisCard";
 import { VesselVoyagesCard } from "./VesselVoyagesCard";
-import { VesselTrajectoryMap } from "./VesselTrajectoryMap";
-import { RecentAisMessagesPanel } from "./RecentAisMessagesPanel";
+import { VesselHistoryPanel } from "./VesselHistoryPanel";
 import { EtaCard } from "@/components/predictions/EtaCard";
 import { PredictionPanel } from "@/components/predictions/PredictionPanel";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -73,14 +72,8 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
           <VesselVoyagesCard voyages={voyages ?? []} />
         </TabsContent>
 
-        <TabsContent value="history" className="flex h-full flex-col gap-4 overflow-y-auto p-4">
-          <div className="h-80 shrink-0 overflow-hidden rounded-md border border-border">
-            <VesselTrajectoryMap vessel={vessel} initialPositions={positions ?? []} />
-          </div>
-          <div>
-            <h2 className="mb-2 text-sm font-medium">Recent AIS Messages</h2>
-            <RecentAisMessagesPanel mmsi={mmsi} />
-          </div>
+        <TabsContent value="history" className="overflow-y-auto p-4">
+          <VesselHistoryPanel mmsi={mmsi} />
         </TabsContent>
 
         <TabsContent value="predictions" className="space-y-4 overflow-y-auto p-4">

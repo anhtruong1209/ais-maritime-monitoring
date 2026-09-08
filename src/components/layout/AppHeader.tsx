@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { Menu, PanelLeft, Radar, Search } from "lucide-react";
+import { Menu, Radar, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,13 +12,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useSidebar } from "@/providers/sidebar-provider";
+import { cn } from "@/lib/utils";
 import { AppSidebar } from "./AppSidebar";
+import { NAV_ITEMS } from "./nav-items";
 
 export function AppHeader() {
   const router = useRouter();
+  const pathname = usePathname();
   const [search, setSearch] = useState("");
-  const { toggle: toggleSidebar } = useSidebar();
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -27,7 +28,7 @@ export function AppHeader() {
   }
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-4">
+    <header className="flex h-14 shrink-0 items-center gap-4 border-b border-border bg-card px-4">
       <Sheet>
         <SheetTrigger render={<Button variant="ghost" size="icon" className="md:hidden" />}>
           <Menu className="size-5" />
@@ -38,22 +39,32 @@ export function AppHeader() {
         </SheetContent>
       </Sheet>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        className="hidden md:flex"
-        onClick={toggleSidebar}
-        aria-label="Toggle sidebar"
-      >
-        <PanelLeft className="size-5" />
-      </Button>
-
       <Link href="/dashboard" className="flex items-center gap-2 font-semibold tracking-tight">
         <Radar className="size-5 text-primary" strokeWidth={2.2} />
         <span className="hidden sm:inline">AIS Maritime Monitoring</span>
       </Link>
 
-      <form onSubmit={handleSearch} className="ml-auto flex w-full max-w-sm items-center gap-2">
+      <nav className="hidden items-center gap-1 md:flex">
+        {NAV_ITEMS.map(({ href, label }) => {
+          const active = pathname === href || pathname.startsWith(`${href}/`);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "rounded-md px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors",
+                active
+                  ? "bg-accent text-accent-foreground"
+                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+              )}
+            >
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <form onSubmit={handleSearch} className="ml-auto flex w-full max-w-xs items-center gap-2">
         <div className="relative w-full">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input

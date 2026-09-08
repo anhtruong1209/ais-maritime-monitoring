@@ -10,8 +10,11 @@ import { VesselDetailContent } from "./VesselDetailContent";
  * A non-modal side panel, not a Dialog/Sheet overlay: `modal={false}` means
  * no backdrop, no scroll lock, no blocking the rest of the page — the map
  * (or table, or fleet roster) underneath stays exactly as it was and stays
- * fully interactive (pan/zoom/click other vessels) while this is open,
- * per "map giữ nguyên, không cần chặn tương tác".
+ * fully interactive (pan/zoom/click other vessels) while this is open.
+ *
+ * Docked left, below the top nav bar (h-14) and above the status bar
+ * (h-8) — matches the reference layout: one simple panel on one side,
+ * top nav stays visible, map/table fills the rest.
  */
 export function VesselDetailSheet() {
   const { selectedMmsi, closeVessel } = useVesselDetailDialog();
@@ -29,8 +32,8 @@ export function VesselDetailSheet() {
             // (and MapLibre's canvas sits in one of those panes too), so
             // this has to clear that comfortably or the map renders on top
             // of the panel instead of the panel floating above the map.
-            "fixed top-0 right-0 z-[2000] flex h-dvh w-full translate-x-0 flex-col border-l border-border bg-popover text-popover-foreground shadow-2xl transition-transform duration-200 ease-in-out sm:max-w-2xl",
-            "data-starting-style:translate-x-full data-ending-style:translate-x-full"
+            "fixed top-14 bottom-8 left-0 z-[2000] flex w-full translate-x-0 flex-col border-r border-border bg-popover text-popover-foreground shadow-2xl transition-transform duration-200 ease-in-out sm:w-96",
+            "data-starting-style:-translate-x-full data-ending-style:-translate-x-full"
           )}
         >
           <DialogPrimitive.Title className="sr-only">Vessel details</DialogPrimitive.Title>
