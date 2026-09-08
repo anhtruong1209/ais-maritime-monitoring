@@ -1,11 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
-import { Menu, Radar, Search } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Menu, Radar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -17,17 +15,13 @@ import { useLocale } from "@/providers/locale-provider";
 import { AppSidebar } from "./AppSidebar";
 import { NAV_ITEMS } from "./nav-items";
 
+// No search box here — it duplicated the Vessels page's own search (and,
+// on /map, the map's own search-with-autocomplete) without adding
+// anything, just two "Search vessel..." boxes stacked on top of each
+// other. One search per page, where it's actually useful, instead.
 export function AppHeader() {
-  const router = useRouter();
   const pathname = usePathname();
-  const [search, setSearch] = useState("");
   const { locale, setLocale, t } = useLocale();
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const trimmed = search.trim();
-    router.push(trimmed ? `/vessels?search=${encodeURIComponent(trimmed)}` : "/vessels");
-  }
 
   return (
     <header className="flex h-14 shrink-0 items-center gap-4 border-b border-border bg-card px-4">
@@ -66,20 +60,7 @@ export function AppHeader() {
         })}
       </nav>
 
-      <form onSubmit={handleSearch} className="ml-auto flex w-full max-w-xs items-center gap-2">
-        <div className="relative w-full">
-          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("Search vessel name or MMSI…")}
-            className="h-9 pl-8"
-            autoComplete="off"
-          />
-        </div>
-      </form>
-
-      <div className="flex items-center overflow-hidden rounded-md border border-border text-xs font-medium">
+      <div className="ml-auto flex items-center overflow-hidden rounded-md border border-border text-xs font-medium">
         <button
           type="button"
           onClick={() => setLocale("vi")}

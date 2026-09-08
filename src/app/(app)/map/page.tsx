@@ -137,8 +137,12 @@ export default function MapPage() {
           neither can end up affected by Leaflet's layout/zoom
           recalculations. The legend sits bottom-RIGHT rather than
           bottom-left specifically because the detail panel is docked
-          left and would otherwise cover it whenever it's open. */}
-      <div className="pointer-events-none fixed top-[4.25rem] right-3 z-[1500]">
+          left and would otherwise cover it whenever it's open. z-index is
+          ABOVE the detail sheet's (z-[2000]): on a narrower viewport the
+          sheet's width plus this panel's width can exceed the screen
+          width, and when that overlap happens the sheet must not be the
+          one left on top — that made the panel's selects unclickable. */}
+      <div className="pointer-events-none fixed top-[4.25rem] right-3 z-[2100]">
         <div className="pointer-events-auto">
           <MapControlsPanel
             filters={filters}
@@ -154,7 +158,7 @@ export default function MapPage() {
           />
         </div>
       </div>
-      <div className="pointer-events-none fixed right-3 bottom-11 z-[1500]">
+      <div className="pointer-events-none fixed right-3 bottom-11 z-[2100]">
         <div className="pointer-events-auto">
           <MapLegend />
         </div>
