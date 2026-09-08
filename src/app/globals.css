@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -48,73 +49,81 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Maritime operations console theme: dark navy, single palette (no
+ * light/dark toggle for the MVP — an ops console reads better as one
+ * deliberate look than as a SaaS-style theme switch). Values are kept in
+ * `.dark` too so nothing regresses if a toggle is added later.
+ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  color-scheme: dark;
+  --background: #0a0e1a;
+  --foreground: #e2e8f0;
+  --card: #101828;
+  --card-foreground: #e2e8f0;
+  --popover: #101828;
+  --popover-foreground: #e2e8f0;
+  --primary: #38bdf8;
+  --primary-foreground: #04121a;
+  --secondary: #1a2438;
+  --secondary-foreground: #cbd5e1;
+  --muted: #1a2438;
+  --muted-foreground: #8896ab;
+  --accent: #1a2438;
+  --accent-foreground: #e2e8f0;
+  --destructive: #f87171;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #38bdf8;
+  --chart-1: #3b82f6;
+  --chart-2: #f59e0b;
+  --chart-3: #22c55e;
+  --chart-4: #a855f7;
+  --chart-5: #06b6d4;
+  --radius: 0.5rem;
+  --sidebar: #0d1424;
+  --sidebar-foreground: #cbd5e1;
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #04121a;
+  --sidebar-accent: #17223a;
+  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #38bdf8;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  color-scheme: dark;
+  --background: #0a0e1a;
+  --foreground: #e2e8f0;
+  --card: #101828;
+  --card-foreground: #e2e8f0;
+  --popover: #101828;
+  --popover-foreground: #e2e8f0;
+  --primary: #38bdf8;
+  --primary-foreground: #04121a;
+  --secondary: #1a2438;
+  --secondary-foreground: #cbd5e1;
+  --muted: #1a2438;
+  --muted-foreground: #8896ab;
+  --accent: #1a2438;
+  --accent-foreground: #e2e8f0;
+  --destructive: #f87171;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #38bdf8;
+  --chart-1: #3b82f6;
+  --chart-2: #f59e0b;
+  --chart-3: #22c55e;
+  --chart-4: #a855f7;
+  --chart-5: #06b6d4;
+  --sidebar: #0d1424;
+  --sidebar-foreground: #cbd5e1;
+  --sidebar-primary: #38bdf8;
+  --sidebar-primary-foreground: #04121a;
+  --sidebar-accent: #17223a;
+  --sidebar-accent-foreground: #e2e8f0;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #38bdf8;
 }
 
 @layer base {
@@ -126,5 +135,48 @@
   }
   html {
     @apply font-sans;
+    /* Slightly larger than the Tailwind default (16px) so dense tables and
+       map overlays stay comfortably readable — matches the "to, rõ ràng"
+       (large, clear) requirement for this ops console. */
+    font-size: 16.5px;
   }
+}
+
+/* Leaflet dark-theme integration. The tile layer itself (Carto Dark
+   Matter) is already dark; this restyles Leaflet's own chrome (popups,
+   attribution, zoom control) to match the app instead of default white. */
+.leaflet-container {
+  background: var(--background);
+  font-family: var(--font-sans);
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--popover);
+  color: var(--popover-foreground);
+}
+.leaflet-bar a {
+  background: var(--card);
+  color: var(--foreground);
+  border-color: var(--border) !important;
+}
+.leaflet-bar a:hover {
+  background: var(--secondary);
+}
+.leaflet-control-attribution {
+  background: rgba(10, 14, 26, 0.7) !important;
+  color: var(--muted-foreground) !important;
+}
+.leaflet-control-attribution a {
+  color: var(--muted-foreground) !important;
+}
+.vessel-marker-icon,
+.port-marker-icon {
+  background: transparent;
+  border: none;
+}
+
+/* Fakes a dark basemap from plain (genuinely free, keyless) OpenStreetMap
+   tiles — see TILE_LAYERS["osm-dark"] in lib/map/config.ts. */
+.map-tiles-dark {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9) saturate(0.7);
 }

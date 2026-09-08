@@ -69,6 +69,24 @@ export interface AnomalyRow {
   created_at: string;
 }
 
+export interface VesselWithLatestPositionRow extends VesselRow {
+  latest_timestamp: string | null;
+  latest_latitude: number | null;
+  latest_longitude: number | null;
+  latest_sog: number | null;
+  latest_cog: number | null;
+  latest_heading: number | null;
+  latest_nav_status: string | null;
+  latest_destination: string | null;
+}
+
+export interface FleetRow {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+}
+
 export interface PortRow {
   id: string;
   name: string;

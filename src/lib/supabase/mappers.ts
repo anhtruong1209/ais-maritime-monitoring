@@ -1,9 +1,12 @@
+import { deriveVesselStatus } from "@/lib/vessel-status";
 import type {
   AISPositionRow,
   AnomalyRow,
+  FleetRow,
   PortRow,
   PredictionRow,
   VesselRow,
+  VesselWithLatestPositionRow,
   VoyageRow,
 } from "./database.types";
 import type {
@@ -12,11 +15,13 @@ import type {
   AnomalySeverity,
   AnomalyStatus,
   AnomalyType,
+  Fleet,
   Port,
   Prediction,
   PredictionType,
   ShipType,
   Vessel,
+  VesselWithLatestPosition,
   Voyage,
   VoyageStatus,
 } from "@/types";
@@ -34,6 +39,29 @@ export function mapVessel(row: VesselRow): Vessel {
     width: row.width,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+  };
+}
+
+export function mapVesselWithLatestPosition(
+  row: VesselWithLatestPositionRow
+): VesselWithLatestPosition {
+  const latestPosition = row.latest_timestamp
+    ? {
+        timestamp: row.latest_timestamp,
+        latitude: row.latest_latitude!,
+        longitude: row.latest_longitude!,
+        sog: row.latest_sog ?? 0,
+        cog: row.latest_cog ?? 0,
+        heading: row.latest_heading,
+        navStatus: row.latest_nav_status,
+        destination: row.latest_destination,
+      }
+    : null;
+
+  return {
+    ...mapVessel(row),
+    latestPosition,
+    status: deriveVesselStatus(latestPosition),
   };
 }
 
@@ -94,6 +122,15 @@ export function mapAnomaly(row: AnomalyRow): Anomaly {
     longitude: row.longitude,
     description: row.description,
     status: row.status as AnomalyStatus,
+    createdAt: row.created_at,
+  };
+}
+
+export function mapFleet(row: FleetRow): Fleet {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
     createdAt: row.created_at,
   };
 }

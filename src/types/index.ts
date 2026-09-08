@@ -4,3 +4,4 @@ export * from "./voyage";
 export * from "./prediction";
 export * from "./anomaly";
 export * from "./port";
+export * from "./fleet";
