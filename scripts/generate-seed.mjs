@@ -733,6 +733,50 @@ for (let i = 0; i < TOTAL_VESSELS; i++) {
   }
 }
 
+// --- Collision-risk anomalies (needs the whole fleet's final positions) ----
+// Anomalies are single-vessel rows (see schema), so a close-quarters
+// situation between two vessels is recorded against one of them, naming
+// the other in the description — same shape as every other anomaly type,
+// no schema change needed for a "vessel pair".
+{
+  const COLLISION_RISK_KM = 1.5; // ~0.8 nm — a genuinely tight CPA for two ships
+  const MAX_COLLISION_ANOMALIES = 3;
+  const candidates = [];
+
+  for (let a = 0; a < vessels.length; a++) {
+    const va = vessels[a];
+    if (!va.isMoving || va.lastLat == null) continue;
+    for (let b = a + 1; b < vessels.length; b++) {
+      const vb = vessels[b];
+      if (!vb.isMoving || vb.lastLat == null) continue;
+      const distKm = haversineKm(
+        { lat: va.lastLat, lon: va.lastLon },
+        { lat: vb.lastLat, lon: vb.lastLon }
+      );
+      if (distKm <= COLLISION_RISK_KM) candidates.push({ va, vb, distKm });
+    }
+  }
+
+  candidates.sort((x, y) => x.distKm - y.distKm);
+
+  for (const { va, vb, distKm } of candidates.slice(0, MAX_COLLISION_ANOMALIES)) {
+    const midLat = (va.lastLat + vb.lastLat) / 2;
+    const midLon = (va.lastLon + vb.lastLon) / 2;
+    const detectedAt = va.lastTimestamp > vb.lastTimestamp ? va.lastTimestamp : vb.lastTimestamp;
+    anomalyRows.push({
+      vesselId: va.id,
+      detectedAt,
+      type: "collision_risk",
+      severity: distKm < 0.5 ? "critical" : "high",
+      score: Number(Math.max(0.7, 1 - distKm / COLLISION_RISK_KM).toFixed(2)),
+      latitude: midLat,
+      longitude: midLon,
+      description: `DEMO/MOCK: Closing to ${distKm.toFixed(2)} km of ${vb.name} (MMSI ${vb.mmsi}) on a converging course.`,
+      status: "open",
+    });
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Emit SQL
 // ---------------------------------------------------------------------------
