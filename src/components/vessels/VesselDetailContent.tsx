@@ -15,6 +15,7 @@ import { useVessel } from "@/hooks/use-vessel";
 import { usePredictions } from "@/hooks/use-predictions";
 import { useVesselPositions } from "@/hooks/use-vessel-positions";
 import { useVesselVoyages } from "@/hooks/use-vessel-voyages";
+import { useLocale } from "@/providers/locale-provider";
 import { deriveVesselStatus } from "@/lib/vessel-status";
 
 /**
@@ -30,6 +31,7 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
   const { data: positions } = useVesselPositions(mmsi, 24);
   const { data: voyages } = useVesselVoyages(mmsi);
   const { data: predictions, isLoading: predictionsLoading } = usePredictions(mmsi);
+  const { t } = useLocale();
 
   if (vesselLoading) {
     return (
@@ -44,7 +46,7 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
     return (
       <div className="flex h-40 flex-col items-center justify-center gap-2 p-4 text-sm text-muted-foreground">
         <AlertCircle className="size-5" />
-        Vessel not found.
+        {t("Vessel not found.")}
       </div>
     );
   }
@@ -61,10 +63,10 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
 
       <Tabs defaultValue="current" className="min-h-0 flex-1">
         <TabsList className="mx-4 mt-3">
-          <TabsTrigger value="current">Hiện tại</TabsTrigger>
-          <TabsTrigger value="history">Lịch sử</TabsTrigger>
-          <TabsTrigger value="predictions">Dự đoán</TabsTrigger>
-          <TabsTrigger value="particulars">Thông số</TabsTrigger>
+          <TabsTrigger value="current">{t("Current")}</TabsTrigger>
+          <TabsTrigger value="history">{t("History")}</TabsTrigger>
+          <TabsTrigger value="predictions">{t("Predictions")}</TabsTrigger>
+          <TabsTrigger value="particulars">{t("Particulars")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="current" className="space-y-4 overflow-y-auto p-4">
@@ -80,7 +82,7 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
           {predictionsLoading && <Skeleton className="h-56 w-full" />}
           {!predictionsLoading && !predictions && (
             <p className="text-sm text-muted-foreground">
-              No AIS data available to generate a prediction for this vessel.
+              {t("No AIS data available to generate a prediction for this vessel.")}
             </p>
           )}
           {predictions && (

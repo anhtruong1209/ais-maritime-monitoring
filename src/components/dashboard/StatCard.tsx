@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { T } from "@/components/shared/T";
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
@@ -14,7 +15,9 @@ export function StatCard({ label, value, icon: Icon, accentClassName }: StatCard
     <Card className="gap-2 py-4">
       <CardContent className="flex items-center justify-between px-4">
         <div>
-          <p className="text-xs font-medium text-muted-foreground">{label}</p>
+          <p className="text-xs font-medium text-muted-foreground">
+            <T>{label}</T>
+          </p>
           <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
         </div>
         <div

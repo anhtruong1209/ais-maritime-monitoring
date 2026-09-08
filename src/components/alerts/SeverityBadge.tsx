@@ -1,5 +1,8 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/providers/locale-provider";
 import type { AnomalySeverity } from "@/types";
 
 const SEVERITY_STYLES: Record<AnomalySeverity, string> = {
@@ -10,9 +13,10 @@ const SEVERITY_STYLES: Record<AnomalySeverity, string> = {
 };
 
 export function SeverityBadge({ severity }: { severity: AnomalySeverity }) {
+  const { t } = useLocale();
   return (
     <Badge variant="outline" className={cn("font-normal capitalize", SEVERITY_STYLES[severity])}>
-      {severity}
+      {t(severity)}
     </Badge>
   );
 }

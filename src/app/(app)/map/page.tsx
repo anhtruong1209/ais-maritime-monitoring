@@ -10,6 +10,7 @@ import { useVesselPositions } from "@/hooks/use-vessel-positions";
 import { usePredictions } from "@/hooks/use-predictions";
 import { useOpenAnomalies } from "@/hooks/use-anomalies";
 import { DEFAULT_TILE_LAYER_ID } from "@/lib/map/config";
+import { useLocale } from "@/providers/locale-provider";
 
 const ALL = "all";
 
@@ -30,6 +31,7 @@ export default function MapPage() {
   const [filters, setFilters] = useState<MapFilterState>(DEFAULT_FILTERS);
   const [selectedVesselId, setSelectedVesselId] = useState<string | null>(null);
   const [resetSignal, setResetSignal] = useState(0);
+  const { t } = useLocale();
 
   const { data: vesselsResponse, isLoading } = useAllVesselsForMap({
     search: filters.search || undefined,
@@ -86,7 +88,7 @@ export default function MapPage() {
           />
           {isLoading && (
             <div className="h-fit rounded-md border border-border bg-card/95 px-3 py-1.5 text-xs text-muted-foreground shadow-lg backdrop-blur">
-              Loading fleet…
+              {t("Loading fleet…")}
             </div>
           )}
         </div>

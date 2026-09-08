@@ -1,17 +1,21 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VoyageStatusBadge } from "@/components/voyages/VoyageStatusBadge";
 import { formatDateTime } from "@/lib/format";
+import { useLocale } from "@/providers/locale-provider";
 import type { Voyage } from "@/types";
 
 export function VesselVoyagesCard({ voyages }: { voyages: Voyage[] }) {
+  const { t } = useLocale();
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm font-medium">Voyage History</CardTitle>
+        <CardTitle className="text-sm font-medium">{t("Voyage History")}</CardTitle>
       </CardHeader>
       <CardContent>
         {voyages.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No voyage records.</p>
+          <p className="text-sm text-muted-foreground">{t("No voyage records.")}</p>
         ) : (
           <ul className="space-y-3">
             {voyages.map((voyage) => (
@@ -23,9 +27,9 @@ export function VesselVoyagesCard({ voyages }: { voyages: Voyage[] }) {
                   <VoyageStatusBadge status={voyage.status} />
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Departed {formatDateTime(voyage.departureTime)}
+                  {t("Departed")} {formatDateTime(voyage.departureTime)}
                   {voyage.actualArrival
-                    ? ` · Arrived ${formatDateTime(voyage.actualArrival)}`
+                    ? ` · ${t("Arrived")} ${formatDateTime(voyage.actualArrival)}`
                     : voyage.estimatedArrival
                       ? ` · ETA ${formatDateTime(voyage.estimatedArrival)}`
                       : ""}

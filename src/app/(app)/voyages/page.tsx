@@ -1,6 +1,7 @@
 import { VoyageFilters } from "@/components/voyages/VoyageFilters";
 import { VoyageTable } from "@/components/voyages/VoyageTable";
 import { Pagination } from "@/components/shared/Pagination";
+import { T } from "@/components/shared/T";
 import { getVoyages } from "@/lib/data/voyages";
 import { voyageListQuerySchema } from "@/lib/validation/voyage";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
@@ -21,8 +22,10 @@ export default async function VoyagesPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-4 p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Voyages</h1>
-        <p className="text-sm text-muted-foreground">{total} total</p>
+        <h1 className="text-lg font-semibold"><T>Voyages</T></h1>
+        <p className="text-sm text-muted-foreground">
+          {total} <T>total</T>
+        </p>
       </div>
 
       <VoyageFilters />

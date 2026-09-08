@@ -1,6 +1,7 @@
 import { VesselFilters } from "@/components/vessels/VesselFilters";
 import { VesselTable } from "@/components/vessels/VesselTable";
 import { Pagination } from "@/components/shared/Pagination";
+import { T } from "@/components/shared/T";
 import { getVessels } from "@/lib/data/vessels";
 import { vesselListQuerySchema } from "@/lib/validation/vessel";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
@@ -21,8 +22,10 @@ export default async function VesselsPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-4 p-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Vessels</h1>
-        <p className="text-sm text-muted-foreground">{total} total</p>
+        <h1 className="text-lg font-semibold"><T>Vessels</T></h1>
+        <p className="text-sm text-muted-foreground">
+          {total} <T>total</T>
+        </p>
       </div>
 
       <VesselFilters />

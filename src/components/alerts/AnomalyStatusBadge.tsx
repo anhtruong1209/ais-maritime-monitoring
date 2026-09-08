@@ -1,5 +1,8 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/providers/locale-provider";
 import type { AnomalyStatus } from "@/types";
 
 const STATUS_STYLES: Record<AnomalyStatus, string> = {
@@ -10,9 +13,10 @@ const STATUS_STYLES: Record<AnomalyStatus, string> = {
 };
 
 export function AnomalyStatusBadge({ status }: { status: AnomalyStatus }) {
+  const { t } = useLocale();
   return (
     <Badge variant="outline" className={cn("font-normal capitalize", STATUS_STYLES[status])}>
-      {status}
+      {t(status)}
     </Badge>
   );
 }

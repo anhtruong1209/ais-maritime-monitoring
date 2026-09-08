@@ -9,13 +9,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useLocale } from "@/providers/locale-provider";
 
 const ALL = "all";
-const STATUSES = ["scheduled", "in_progress", "completed", "cancelled"];
+const STATUS_LABELS: Record<string, string> = {
+  scheduled: "Scheduled",
+  in_progress: "In Progress",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
 
 export function VoyageFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLocale();
 
   function updateParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -30,8 +37,9 @@ export function VoyageFilters() {
       <Input
         defaultValue={searchParams.get("destinationPort") ?? ""}
         onBlur={(e) => updateParam("destinationPort", e.target.value)}
-        placeholder="Destination port…"
+        placeholder={t("Destination port…")}
         className="h-9 w-48"
+        autoComplete="off"
       />
       <Input
         type="date"
@@ -44,13 +52,13 @@ export function VoyageFilters() {
         onValueChange={(v) => updateParam("status", v)}
       >
         <SelectTrigger className="h-9 w-40">
-          <SelectValue placeholder="Status" />
+          <SelectValue placeholder={t("Status")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All statuses</SelectItem>
-          {STATUSES.map((status) => (
-            <SelectItem key={status} value={status} className="capitalize">
-              {status.replace("_", " ")}
+          <SelectItem value={ALL}>{t("All statuses")}</SelectItem>
+          {Object.entries(STATUS_LABELS).map(([status, label]) => (
+            <SelectItem key={status} value={status}>
+              {t(label)}
             </SelectItem>
           ))}
         </SelectContent>

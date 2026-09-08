@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Table,
   TableBody,
@@ -7,12 +9,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCog, formatDateTime, formatSog } from "@/lib/format";
+import { useLocale } from "@/providers/locale-provider";
 import type { AISPosition } from "@/types";
 
 /** Presentational — expects `positions` already in the order/page to display. */
 export function RecentAisMessagesTable({ positions }: { positions: AISPosition[] }) {
+  const { t } = useLocale();
+
   if (positions.length === 0) {
-    return <p className="text-sm text-muted-foreground">No recent AIS messages.</p>;
+    return <p className="text-sm text-muted-foreground">{t("No recent AIS messages.")}</p>;
   }
 
   return (
@@ -20,12 +25,12 @@ export function RecentAisMessagesTable({ positions }: { positions: AISPosition[]
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Timestamp</TableHead>
+            <TableHead>{t("Timestamp")}</TableHead>
             <TableHead>Lat</TableHead>
             <TableHead>Lon</TableHead>
-            <TableHead>SOG</TableHead>
-            <TableHead>COG</TableHead>
-            <TableHead>Nav Status</TableHead>
+            <TableHead>{t("SOG")}</TableHead>
+            <TableHead>{t("COG")}</TableHead>
+            <TableHead>{t("Nav Status")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

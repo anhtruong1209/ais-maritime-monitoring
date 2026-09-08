@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { SHIP_TYPES, VESSEL_STATUSES } from "@/lib/constants";
 import { SHIP_TYPE_LABELS } from "@/lib/map/ship-type-meta";
+import { useLocale } from "@/providers/locale-provider";
 
 const ALL = "all";
 
@@ -19,6 +20,7 @@ export function VesselFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const { t } = useLocale();
 
   function updateParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -39,8 +41,9 @@ export function VesselFilters() {
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search name or MMSI…"
+          placeholder={t("Search name or MMSI…")}
           className="h-9"
+          autoComplete="off"
         />
       </form>
 
@@ -49,13 +52,13 @@ export function VesselFilters() {
         onValueChange={(v) => updateParam("shipType", v)}
       >
         <SelectTrigger className="h-9 w-40">
-          <SelectValue placeholder="Ship type" />
+          <SelectValue placeholder={t("Type")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All types</SelectItem>
+          <SelectItem value={ALL}>{t("All types")}</SelectItem>
           {SHIP_TYPES.map((type) => (
             <SelectItem key={type} value={type}>
-              {SHIP_TYPE_LABELS[type]}
+              {t(SHIP_TYPE_LABELS[type])}
             </SelectItem>
           ))}
         </SelectContent>
@@ -66,13 +69,13 @@ export function VesselFilters() {
         onValueChange={(v) => updateParam("status", v)}
       >
         <SelectTrigger className="h-9 w-36">
-          <SelectValue placeholder="Status" />
+          <SelectValue placeholder={t("Status")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All statuses</SelectItem>
+          <SelectItem value={ALL}>{t("All statuses")}</SelectItem>
           {VESSEL_STATUSES.map((status) => (
             <SelectItem key={status} value={status} className="capitalize">
-              {status}
+              {t(status)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -81,8 +84,9 @@ export function VesselFilters() {
       <Input
         defaultValue={searchParams.get("destination") ?? ""}
         onBlur={(e) => updateParam("destination", e.target.value)}
-        placeholder="Destination…"
+        placeholder={t("Destination…")}
         className="h-9 w-40"
+        autoComplete="off"
       />
     </div>
   );

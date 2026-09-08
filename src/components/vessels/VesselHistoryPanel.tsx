@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVesselPositions } from "@/hooks/use-vessel-positions";
 import { TRAJECTORY_WINDOW_OPTIONS } from "@/lib/constants";
+import { useLocale } from "@/providers/locale-provider";
 
 /**
  * Plain data view of a vessel's recent AIS history — no embedded map here
@@ -15,6 +16,7 @@ import { TRAJECTORY_WINDOW_OPTIONS } from "@/lib/constants";
 export function VesselHistoryPanel({ mmsi }: { mmsi: string }) {
   const [hours, setHours] = useState(24);
   const { data: positions, isLoading } = useVesselPositions(mmsi, hours);
+  const { t } = useLocale();
 
   return (
     <div className="space-y-3">
@@ -22,7 +24,7 @@ export function VesselHistoryPanel({ mmsi }: { mmsi: string }) {
         <TabsList>
           {TRAJECTORY_WINDOW_OPTIONS.map((opt) => (
             <TabsTrigger key={opt.hours} value={String(opt.hours)}>
-              {opt.label}
+              {t(opt.label)}
             </TabsTrigger>
           ))}
         </TabsList>

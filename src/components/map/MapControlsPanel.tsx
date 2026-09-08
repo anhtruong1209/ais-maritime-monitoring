@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { SHIP_TYPES, VESSEL_STATUSES } from "@/lib/constants";
 import { TILE_LAYERS } from "@/lib/map/config";
 import { SHIP_TYPE_LABELS } from "@/lib/map/ship-type-meta";
+import { useLocale } from "@/providers/locale-provider";
 
 const ALL = "all";
 
@@ -42,6 +43,8 @@ export function MapControlsPanel({
   selectedVesselName,
   onClearSelection,
 }: MapControlsPanelProps) {
+  const { t } = useLocale();
+
   return (
     <div className="w-80 space-y-3.5 rounded-md border border-border bg-card/95 p-4 text-sm shadow-lg backdrop-blur">
       <div className="relative">
@@ -49,21 +52,22 @@ export function MapControlsPanel({
         <Input
           value={filters.search}
           onChange={(e) => onChange({ search: e.target.value })}
-          placeholder="Search vessel name or MMSI…"
+          placeholder={t("Search vessel name or MMSI…")}
           className="h-10 pl-8"
+          autoComplete="off"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <Select value={filters.shipType} onValueChange={(v) => onChange({ shipType: v ?? ALL })}>
           <SelectTrigger className="h-10">
-            <SelectValue placeholder="Type" />
+            <SelectValue placeholder={t("Type")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>All types</SelectItem>
+            <SelectItem value={ALL}>{t("All types")}</SelectItem>
             {SHIP_TYPES.map((type) => (
               <SelectItem key={type} value={type}>
-                {SHIP_TYPE_LABELS[type]}
+                {t(SHIP_TYPE_LABELS[type])}
               </SelectItem>
             ))}
           </SelectContent>
@@ -71,13 +75,13 @@ export function MapControlsPanel({
 
         <Select value={filters.status} onValueChange={(v) => onChange({ status: v ?? ALL })}>
           <SelectTrigger className="h-10">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t("Status")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>All statuses</SelectItem>
+            <SelectItem value={ALL}>{t("All statuses")}</SelectItem>
             {VESSEL_STATUSES.map((status) => (
               <SelectItem key={status} value={status} className="capitalize">
-                {status}
+                {t(status)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -86,7 +90,7 @@ export function MapControlsPanel({
 
       <Select value={filters.tileLayerId} onValueChange={(v) => v && onChange({ tileLayerId: v })}>
         <SelectTrigger className="h-10 w-full">
-          <SelectValue placeholder="Basemap" />
+          <SelectValue placeholder={t("Basemap")} />
         </SelectTrigger>
         <SelectContent>
           {TILE_LAYERS.map((layer) => (
@@ -99,7 +103,7 @@ export function MapControlsPanel({
 
       <div className="space-y-2 border-t border-border pt-2">
         <label className="flex items-center justify-between">
-          <span className="text-muted-foreground">Historical trajectory</span>
+          <span className="text-muted-foreground">{t("Historical trajectory")}</span>
           <Switch
             checked={filters.showHistorical}
             onCheckedChange={(v) => onChange({ showHistorical: v })}
@@ -107,7 +111,7 @@ export function MapControlsPanel({
           />
         </label>
         <label className="flex items-center justify-between">
-          <span className="text-muted-foreground">Predicted trajectory</span>
+          <span className="text-muted-foreground">{t("Predicted trajectory")}</span>
           <Switch
             checked={filters.showPredicted}
             onCheckedChange={(v) => onChange({ showPredicted: v })}
@@ -115,7 +119,7 @@ export function MapControlsPanel({
           />
         </label>
         <label className="flex items-center justify-between">
-          <span className="text-muted-foreground">Anomaly alerts</span>
+          <span className="text-muted-foreground">{t("Anomaly alerts")}</span>
           <Switch
             checked={filters.showAnomalies}
             onCheckedChange={(v) => onChange({ showAnomalies: v })}
@@ -133,7 +137,7 @@ export function MapControlsPanel({
       )}
 
       <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={onReset}>
-        <RotateCcw className="size-3.5" /> Reset view
+        <RotateCcw className="size-3.5" /> {t("Reset view")}
       </Button>
     </div>
   );

@@ -11,16 +11,18 @@ import {
 } from "@/components/ui/table";
 import { VoyageStatusBadge } from "./VoyageStatusBadge";
 import { formatDateTime } from "@/lib/format";
+import { useLocale } from "@/providers/locale-provider";
 import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import type { VoyageWithVessel } from "@/types";
 
 export function VoyageTable({ voyages }: { voyages: VoyageWithVessel[] }) {
   const { openVessel } = useVesselDetailDialog();
+  const { t } = useLocale();
 
   if (voyages.length === 0) {
     return (
       <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
-        No voyages match the current filters.
+        {t("No voyages match the current filters.")}
       </div>
     );
   }
@@ -30,13 +32,13 @@ export function VoyageTable({ voyages }: { voyages: VoyageWithVessel[] }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Vessel</TableHead>
-            <TableHead>Departure</TableHead>
-            <TableHead>Destination</TableHead>
-            <TableHead>Departed</TableHead>
-            <TableHead>ETA</TableHead>
-            <TableHead>Arrived</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>{t("Vessel")}</TableHead>
+            <TableHead>{t("Departure")}</TableHead>
+            <TableHead>{t("Destination")}</TableHead>
+            <TableHead>{t("Departed")}</TableHead>
+            <TableHead>{t("ETA")}</TableHead>
+            <TableHead>{t("Arrived")}</TableHead>
+            <TableHead>{t("Status")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

@@ -3,6 +3,7 @@ import { Be_Vietnam_Pro, Geist_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/providers/query-provider";
+import { LocaleProvider } from "@/providers/locale-provider";
 import "./globals.css";
 
 // Be Vietnam Pro: designed with full Vietnamese-diacritic coverage and a
@@ -41,12 +42,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
-        <QueryProvider>
-          <TooltipProvider delay={150}>
-            {children}
-            <Toaster richColors position="top-right" />
-          </TooltipProvider>
-        </QueryProvider>
+        <LocaleProvider>
+          <QueryProvider>
+            <TooltipProvider delay={150}>
+              {children}
+              <Toaster richColors position="top-right" />
+            </TooltipProvider>
+          </QueryProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

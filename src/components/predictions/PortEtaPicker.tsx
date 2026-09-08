@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePorts } from "@/hooks/use-ports";
+import { useLocale } from "@/providers/locale-provider";
 
 const AUTO = "auto";
 
@@ -21,14 +22,15 @@ export function PortEtaPicker({
   onChange: (portId: string | null) => void;
 }) {
   const { data: ports } = usePorts();
+  const { t } = useLocale();
 
   return (
     <Select value={value ?? AUTO} onValueChange={(v) => onChange(v === AUTO || !v ? null : v)}>
       <SelectTrigger className="h-10 w-64">
-        <SelectValue placeholder="Destination port" />
+        <SelectValue placeholder={t("Destination port")} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={AUTO}>Auto (AIS reported destination)</SelectItem>
+        <SelectItem value={AUTO}>{t("Auto (AIS reported destination)")}</SelectItem>
         {ports?.map((port) => (
           <SelectItem key={port.id} value={port.id}>
             {port.name}

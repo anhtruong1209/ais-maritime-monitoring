@@ -2,11 +2,13 @@
 
 import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { SHIP_TYPE_COLORS, SHIP_TYPE_LABELS } from "@/lib/map/ship-type-meta";
+import { useLocale } from "@/providers/locale-provider";
 import type { ShipType } from "@/types";
 
 export function VesselTypeChart({ byShipType }: { byShipType: Record<ShipType, number> }) {
+  const { t } = useLocale();
   const data = (Object.keys(SHIP_TYPE_LABELS) as ShipType[])
-    .map((type) => ({ type, label: SHIP_TYPE_LABELS[type], count: byShipType[type] ?? 0 }))
+    .map((type) => ({ type, label: t(SHIP_TYPE_LABELS[type]), count: byShipType[type] ?? 0 }))
     .filter((d) => d.count > 0)
     .sort((a, b) => b.count - a.count);
 

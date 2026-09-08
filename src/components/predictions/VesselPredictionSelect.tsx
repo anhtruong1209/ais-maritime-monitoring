@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAllVesselsForMap } from "@/hooks/use-vessels";
+import { useLocale } from "@/providers/locale-provider";
 
 export function VesselPredictionSelect({
   value,
@@ -18,11 +19,14 @@ export function VesselPredictionSelect({
 }) {
   const { data, isLoading } = useAllVesselsForMap({ status: "moving" });
   const vessels = [...(data?.data ?? [])].sort((a, b) => a.name.localeCompare(b.name));
+  const { t } = useLocale();
 
   return (
     <Select value={value ?? undefined} onValueChange={(v) => v && onChange(v)}>
       <SelectTrigger className="h-9 w-72">
-        <SelectValue placeholder={isLoading ? "Loading vessels…" : "Select a moving vessel…"} />
+        <SelectValue
+          placeholder={isLoading ? t("Loading vessels…") : t("Select a moving vessel…")}
+        />
       </SelectTrigger>
       <SelectContent className="max-h-72">
         {vessels.map((vessel) => (

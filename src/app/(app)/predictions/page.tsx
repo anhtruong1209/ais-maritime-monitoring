@@ -12,6 +12,7 @@ import { VesselPredictionSelect } from "@/components/predictions/VesselPredictio
 import { usePredictions } from "@/hooks/use-predictions";
 import { useVesselPositions } from "@/hooks/use-vessel-positions";
 import { useAllVesselsForMap } from "@/hooks/use-vessels";
+import { useLocale } from "@/providers/locale-provider";
 
 export default function PredictionsPage() {
   const [mmsi, setMmsi] = useState<string | null>(null);
@@ -20,6 +21,7 @@ export default function PredictionsPage() {
   const { data: positions } = useVesselPositions(mmsi, 24);
   const { data: vesselsResponse } = useAllVesselsForMap({});
   const vessel = vesselsResponse?.data.find((v) => v.mmsi === mmsi) ?? null;
+  const { t } = useLocale();
 
   function handleSelectVessel(next: string) {
     setMmsi(next);
@@ -29,7 +31,7 @@ export default function PredictionsPage() {
   return (
     <div className="space-y-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-lg font-semibold">AI Predictions</h1>
+        <h1 className="text-lg font-semibold">{t("AI Predictions")}</h1>
         <div className="flex flex-wrap items-center gap-2">
           <VesselPredictionSelect value={mmsi} onChange={handleSelectVessel} />
           {mmsi && <PortEtaPicker value={portId} onChange={setPortId} />}
@@ -40,7 +42,7 @@ export default function PredictionsPage() {
         <Card>
           <CardContent className="flex h-40 flex-col items-center justify-center gap-2 text-sm text-muted-foreground">
             <AlertCircle className="size-5" />
-            Select a vessel above to generate a demo trajectory and ETA prediction.
+            {t("Select a vessel above to generate a demo trajectory and ETA prediction.")}
           </CardContent>
         </Card>
       )}
@@ -55,7 +57,7 @@ export default function PredictionsPage() {
       {mmsi && isError && (
         <Card>
           <CardContent className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-            No AIS data available to generate a prediction for this vessel.
+            {t("No AIS data available to generate a prediction for this vessel.")}
           </CardContent>
         </Card>
       )}

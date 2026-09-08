@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VoyageStatusBadge } from "@/components/voyages/VoyageStatusBadge";
 import { MapCanvas } from "@/components/map/MapCanvas";
+import { T } from "@/components/shared/T";
 import { getVoyageById } from "@/lib/data/voyages";
 import { getVesselByMmsi, getVesselPositionsInRange } from "@/lib/data/vessels";
 import { deriveVesselStatus } from "@/lib/vessel-status";
@@ -14,7 +15,9 @@ interface PageProps {
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs text-muted-foreground">{label}</dt>
+      <dt className="text-xs text-muted-foreground">
+        <T>{label}</T>
+      </dt>
       <dd className="text-sm font-medium">{value}</dd>
     </div>
   );
@@ -65,7 +68,9 @@ export default async function VoyageDetailPage({ params }: PageProps) {
       <div className="grid gap-4 lg:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Voyage Details</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              <T>Voyage Details</T>
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <dl className="grid grid-cols-2 gap-y-3">
@@ -86,7 +91,9 @@ export default async function VoyageDetailPage({ params }: PageProps) {
 
         <Card className="overflow-hidden lg:col-span-2">
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Voyage Trajectory</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              <T>Voyage Trajectory</T>
+            </CardTitle>
           </CardHeader>
           <CardContent className="h-96 p-0">
             <MapCanvas

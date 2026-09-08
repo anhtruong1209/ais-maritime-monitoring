@@ -13,6 +13,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/providers/locale-provider";
 import { AppSidebar } from "./AppSidebar";
 import { NAV_ITEMS } from "./nav-items";
 
@@ -20,6 +21,7 @@ export function AppHeader() {
   const router = useRouter();
   const pathname = usePathname();
   const [search, setSearch] = useState("");
+  const { locale, setLocale, t } = useLocale();
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -58,7 +60,7 @@ export function AppHeader() {
                   : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
               )}
             >
-              {label}
+              {t(label)}
             </Link>
           );
         })}
@@ -70,18 +72,42 @@ export function AppHeader() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search vessel name or MMSI…"
+            placeholder={t("Search vessel name or MMSI…")}
             className="h-9 pl-8"
+            autoComplete="off"
           />
         </div>
       </form>
+
+      <div className="flex items-center overflow-hidden rounded-md border border-border text-xs font-medium">
+        <button
+          type="button"
+          onClick={() => setLocale("vi")}
+          className={cn(
+            "px-2 py-1",
+            locale === "vi" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent/50"
+          )}
+        >
+          VI
+        </button>
+        <button
+          type="button"
+          onClick={() => setLocale("en")}
+          className={cn(
+            "px-2 py-1",
+            locale === "en" ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:bg-accent/50"
+          )}
+        >
+          EN
+        </button>
+      </div>
 
       <div className="hidden items-center gap-2 text-xs text-muted-foreground lg:flex">
         <span className="relative flex size-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
           <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
         </span>
-        System online
+        {t("System online")}
       </div>
     </header>
   );

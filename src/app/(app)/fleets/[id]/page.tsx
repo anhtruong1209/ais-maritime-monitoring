@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VesselTable } from "@/components/vessels/VesselTable";
 import { MapCanvas } from "@/components/map/MapCanvas";
+import { T } from "@/components/shared/T";
 import { getFleetById, getFleetVessels } from "@/lib/data/fleets";
 import { getPorts } from "@/lib/data/ports";
 
@@ -27,7 +28,9 @@ export default async function FleetDetailPage({ params }: PageProps) {
 
       <Card className="overflow-hidden">
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Fleet Position — {vessels.length} vessels</CardTitle>
+          <CardTitle className="text-sm font-medium">
+            <T>Fleet Position</T> — {vessels.length} <T>vessels</T>
+          </CardTitle>
         </CardHeader>
         <CardContent className="h-96 p-0">
           <MapCanvas vessels={vessels} ports={ports} cluster={vessels.length > 50} />

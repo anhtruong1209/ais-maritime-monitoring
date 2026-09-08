@@ -1,14 +1,16 @@
 "use client";
 
 import { formatRelativeTime, formatSog } from "@/lib/format";
+import { useLocale } from "@/providers/locale-provider";
 import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import type { RecentActivityItem } from "@/lib/data/dashboard";
 
 export function RecentActivityList({ items }: { items: RecentActivityItem[] }) {
   const { openVessel } = useVesselDetailDialog();
+  const { t } = useLocale();
 
   if (items.length === 0) {
-    return <p className="text-sm text-muted-foreground">No recent AIS activity.</p>;
+    return <p className="text-sm text-muted-foreground">{t("No recent AIS activity.")}</p>;
   }
 
   return (
@@ -23,7 +25,7 @@ export function RecentActivityList({ items }: { items: RecentActivityItem[] }) {
             <div className="min-w-0">
               <p className="truncate font-medium">{item.vesselName}</p>
               <p className="truncate text-xs text-muted-foreground">
-                {formatSog(item.sog)} · {item.destination ?? "No destination"}
+                {formatSog(item.sog)} · {item.destination ?? t("No destination")}
               </p>
             </div>
             <span className="shrink-0 text-xs text-muted-foreground">

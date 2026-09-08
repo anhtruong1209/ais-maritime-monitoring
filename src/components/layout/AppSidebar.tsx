@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/providers/locale-provider";
 import { NAV_ITEMS } from "./nav-items";
 
 /** Vertical nav list — used inside the mobile menu Sheet. The desktop nav
  * is a horizontal bar directly in AppHeader instead (see "menu lên top"). */
 export function AppSidebar() {
   const pathname = usePathname();
+  const { t } = useLocale();
 
   return (
     <nav className="flex h-full w-56 shrink-0 flex-col gap-1 bg-sidebar p-3">
@@ -26,7 +28,7 @@ export function AppSidebar() {
             )}
           >
             <Icon className="size-4 shrink-0" strokeWidth={2} />
-            {label}
+            {t(label)}
           </Link>
         );
       })}

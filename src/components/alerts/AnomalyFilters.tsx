@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ANOMALY_SEVERITY_ORDER, ANOMALY_TYPES, ANOMALY_TYPE_LABELS } from "@/lib/constants";
+import { useLocale } from "@/providers/locale-provider";
 
 const ALL = "all";
 const STATUSES = ["open", "acknowledged", "resolved", "dismissed"];
@@ -16,6 +17,7 @@ const STATUSES = ["open", "acknowledged", "resolved", "dismissed"];
 export function AnomalyFilters() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useLocale();
 
   function updateParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -29,13 +31,13 @@ export function AnomalyFilters() {
     <div className="flex flex-wrap items-center gap-2">
       <Select value={searchParams.get("type") ?? ALL} onValueChange={(v) => updateParam("type", v)}>
         <SelectTrigger className="h-9 w-56">
-          <SelectValue placeholder="Anomaly type" />
+          <SelectValue placeholder={t("Anomaly type")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All types</SelectItem>
+          <SelectItem value={ALL}>{t("All types")}</SelectItem>
           {ANOMALY_TYPES.map((type) => (
             <SelectItem key={type} value={type}>
-              {ANOMALY_TYPE_LABELS[type]}
+              {t(ANOMALY_TYPE_LABELS[type])}
             </SelectItem>
           ))}
         </SelectContent>
@@ -46,13 +48,13 @@ export function AnomalyFilters() {
         onValueChange={(v) => updateParam("severity", v)}
       >
         <SelectTrigger className="h-9 w-36">
-          <SelectValue placeholder="Severity" />
+          <SelectValue placeholder={t("Severity")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All severities</SelectItem>
+          <SelectItem value={ALL}>{t("All severities")}</SelectItem>
           {ANOMALY_SEVERITY_ORDER.map((severity) => (
             <SelectItem key={severity} value={severity} className="capitalize">
-              {severity}
+              {t(severity)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -63,13 +65,13 @@ export function AnomalyFilters() {
         onValueChange={(v) => updateParam("status", v)}
       >
         <SelectTrigger className="h-9 w-36">
-          <SelectValue placeholder="Status" />
+          <SelectValue placeholder={t("Status")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All statuses</SelectItem>
+          <SelectItem value={ALL}>{t("All statuses")}</SelectItem>
           {STATUSES.map((status) => (
             <SelectItem key={status} value={status} className="capitalize">
-              {status}
+              {t(status)}
             </SelectItem>
           ))}
         </SelectContent>

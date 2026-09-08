@@ -1,6 +1,9 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatDateTime, formatPercent } from "@/lib/format";
+import { useLocale } from "@/providers/locale-provider";
 import type { TrajectoryPredictionResult } from "@/types";
 
 /** Reusable trajectory-prediction summary. Same contract regardless of
@@ -8,29 +11,30 @@ import type { TrajectoryPredictionResult } from "@/types";
  * service — only the `isMock` flag changes what's shown. */
 export function PredictionPanel({ trajectory }: { trajectory: TrajectoryPredictionResult }) {
   const finalPoint = trajectory.points.at(-1);
+  const { t } = useLocale();
 
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle className="text-sm font-medium">Trajectory Prediction</CardTitle>
+        <CardTitle className="text-sm font-medium">{t("Trajectory Prediction")}</CardTitle>
         {trajectory.isMock && (
           <Badge variant="outline" className="border-amber-500/40 text-amber-400">
-            DEMO / MOCK AI PREDICTION
+            {t("DEMO / MOCK AI PREDICTION")}
           </Badge>
         )}
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="flex gap-6">
           <div>
-            <p className="text-xs text-muted-foreground">Horizon</p>
+            <p className="text-xs text-muted-foreground">{t("Horizon")}</p>
             <p className="text-sm font-medium tabular-nums">{trajectory.horizonMinutes} min</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Predicted Points</p>
+            <p className="text-xs text-muted-foreground">{t("Predicted Points")}</p>
             <p className="text-sm font-medium tabular-nums">{trajectory.points.length}</p>
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">Final Confidence</p>
+            <p className="text-xs text-muted-foreground">{t("Final Confidence")}</p>
             <p className="text-sm font-medium tabular-nums">
               {finalPoint?.confidence != null ? formatPercent(finalPoint.confidence) : "—"}
             </p>
@@ -42,10 +46,10 @@ export function PredictionPanel({ trajectory }: { trajectory: TrajectoryPredicti
             <table className="w-full text-xs">
               <thead className="bg-secondary text-muted-foreground">
                 <tr>
-                  <th className="px-2 py-1 text-left">Time</th>
-                  <th className="px-2 py-1 text-left">Lat</th>
-                  <th className="px-2 py-1 text-left">Lon</th>
-                  <th className="px-2 py-1 text-left">Confidence</th>
+                  <th className="px-2 py-1 text-left">{t("Timestamp")}</th>
+                  <th className="px-2 py-1 text-left">{t("Latitude")}</th>
+                  <th className="px-2 py-1 text-left">{t("Longitude")}</th>
+                  <th className="px-2 py-1 text-left">{t("Confidence")}</th>
                 </tr>
               </thead>
               <tbody>

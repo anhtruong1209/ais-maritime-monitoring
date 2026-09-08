@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/providers/locale-provider";
 
 interface PaginationProps {
   page: number;
@@ -14,6 +17,7 @@ const linkClass =
 const disabledClass = "pointer-events-none opacity-50";
 
 export function Pagination({ page, pageSize, total, basePath, searchParams }: PaginationProps) {
+  const { t } = useLocale();
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   function hrefFor(targetPage: number) {
@@ -32,7 +36,7 @@ export function Pagination({ page, pageSize, total, basePath, searchParams }: Pa
   return (
     <div className="flex items-center justify-between text-sm">
       <p className="text-muted-foreground">
-        {start}–{end} of {total}
+        {start}–{end} {t("of")} {total}
       </p>
       <div className="flex gap-1">
         <Link
@@ -41,7 +45,7 @@ export function Pagination({ page, pageSize, total, basePath, searchParams }: Pa
           tabIndex={hasPrevious ? undefined : -1}
           className={cn(linkClass, !hasPrevious && disabledClass)}
         >
-          Previous
+          {t("Previous")}
         </Link>
         <Link
           href={hrefFor(page + 1)}
@@ -49,7 +53,7 @@ export function Pagination({ page, pageSize, total, basePath, searchParams }: Pa
           tabIndex={hasNext ? undefined : -1}
           className={cn(linkClass, !hasNext && disabledClass)}
         >
-          Next
+          {t("Next")}
         </Link>
       </div>
     </div>

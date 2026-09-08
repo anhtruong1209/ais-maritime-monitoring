@@ -11,16 +11,18 @@ import {
 import { ShipTypeBadge } from "./ShipTypeBadge";
 import { VesselStatusBadge } from "./VesselStatusBadge";
 import { formatCog, formatRelativeTime, formatSog } from "@/lib/format";
+import { useLocale } from "@/providers/locale-provider";
 import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import type { VesselWithLatestPosition } from "@/types";
 
 export function VesselTable({ vessels }: { vessels: VesselWithLatestPosition[] }) {
   const { openVessel } = useVesselDetailDialog();
+  const { t } = useLocale();
 
   if (vessels.length === 0) {
     return (
       <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
-        No vessels match the current filters.
+        {t("No vessels match the current filters.")}
       </div>
     );
   }
@@ -30,15 +32,15 @@ export function VesselTable({ vessels }: { vessels: VesselWithLatestPosition[] }
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
+            <TableHead>{t("Name")}</TableHead>
             <TableHead>MMSI</TableHead>
             <TableHead>IMO</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead className="text-right">SOG</TableHead>
-            <TableHead className="text-right">COG</TableHead>
-            <TableHead>Destination</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Last Update</TableHead>
+            <TableHead>{t("Type")}</TableHead>
+            <TableHead className="text-right">{t("SOG")}</TableHead>
+            <TableHead className="text-right">{t("COG")}</TableHead>
+            <TableHead>{t("Destination")}</TableHead>
+            <TableHead>{t("Status")}</TableHead>
+            <TableHead>{t("Last Update")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

@@ -12,16 +12,18 @@ import { SeverityBadge } from "./SeverityBadge";
 import { AnomalyStatusBadge } from "./AnomalyStatusBadge";
 import { ANOMALY_TYPE_LABELS } from "@/lib/constants";
 import { formatCoordinate, formatDateTime } from "@/lib/format";
+import { useLocale } from "@/providers/locale-provider";
 import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import type { AnomalyWithVessel } from "@/types";
 
 export function AnomalyTable({ anomalies }: { anomalies: AnomalyWithVessel[] }) {
   const { openVessel } = useVesselDetailDialog();
+  const { t } = useLocale();
 
   if (anomalies.length === 0) {
     return (
       <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
-        No anomalies match the current filters.
+        {t("No anomalies match the current filters.")}
       </div>
     );
   }
@@ -31,14 +33,14 @@ export function AnomalyTable({ anomalies }: { anomalies: AnomalyWithVessel[] }) 
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Vessel</TableHead>
-            <TableHead>Detected</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Severity</TableHead>
-            <TableHead className="text-right">Score</TableHead>
-            <TableHead>Position</TableHead>
-            <TableHead>Description</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead>{t("Vessel")}</TableHead>
+            <TableHead>{t("Detected")}</TableHead>
+            <TableHead>{t("Type")}</TableHead>
+            <TableHead>{t("Severity")}</TableHead>
+            <TableHead className="text-right">{t("Score")}</TableHead>
+            <TableHead>{t("Position")}</TableHead>
+            <TableHead>{t("Description")}</TableHead>
+            <TableHead>{t("Status")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -51,7 +53,7 @@ export function AnomalyTable({ anomalies }: { anomalies: AnomalyWithVessel[] }) 
                 {anomaly.vesselName}
               </TableCell>
               <TableCell className="text-xs">{formatDateTime(anomaly.detectedAt)}</TableCell>
-              <TableCell>{ANOMALY_TYPE_LABELS[anomaly.type]}</TableCell>
+              <TableCell>{t(ANOMALY_TYPE_LABELS[anomaly.type])}</TableCell>
               <TableCell>
                 <SeverityBadge severity={anomaly.severity} />
               </TableCell>

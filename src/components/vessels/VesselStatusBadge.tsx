@@ -1,5 +1,8 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/providers/locale-provider";
 import type { VesselStatus } from "@/types";
 
 const STATUS_STYLES: Record<VesselStatus, string> = {
@@ -17,9 +20,10 @@ const STATUS_LABELS: Record<VesselStatus, string> = {
 };
 
 export function VesselStatusBadge({ status }: { status: VesselStatus }) {
+  const { t } = useLocale();
   return (
     <Badge variant="outline" className={cn("font-normal", STATUS_STYLES[status])}>
-      {STATUS_LABELS[status]}
+      {t(STATUS_LABELS[status])}
     </Badge>
   );
 }
