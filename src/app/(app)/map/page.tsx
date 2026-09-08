@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MapCanvas } from "@/components/map/MapCanvas";
 import { MapControlsPanel, type MapFilterState } from "@/components/map/MapControlsPanel";
-import { FleetStatusOverview } from "@/components/map/FleetStatusOverview";
 import { MapLegend } from "@/components/map/MapLegend";
 import { useAllVesselsForMap } from "@/hooks/use-vessels";
 import { usePorts } from "@/hooks/use-ports";
@@ -11,7 +10,7 @@ import { useVesselPositions } from "@/hooks/use-vessel-positions";
 import { useTrajectoryPrediction } from "@/hooks/use-predictions";
 import { useOpenAnomalies } from "@/hooks/use-anomalies";
 import { DEFAULT_TILE_LAYER_ID } from "@/lib/map/config";
-import { useLocale } from "@/providers/locale-provider";
+import { interpolateTrackPosition } from "@/lib/map/playback";
 import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import type { VesselWithLatestPosition } from "@/types";
 
@@ -31,7 +30,6 @@ export default function MapPage() {
   const [filters, setFilters] = useState<MapFilterState>(DEFAULT_FILTERS);
   const [selectedVesselId, setSelectedVesselId] = useState<string | null>(null);
   const [resetSignal, setResetSignal] = useState(0);
-  const { t } = useLocale();
   // The vessel-detail panel's own selection + "last N hours" choice — kept
   // in the shared provider (not local state) so its History tab can drive
   // this actual map's trajectory instead of needing an embedded map.
@@ -43,11 +41,12 @@ export default function MapPage() {
     predictionHorizonMinutes,
     predictionRequested,
     predictionVesselMmsi,
+    playbackProgress,
     openVessel,
     closeVessel,
   } = useVesselDetailDialog();
 
-  const { data: vesselsResponse, isLoading } = useAllVesselsForMap({
+  const { data: vesselsResponse } = useAllVesselsForMap({
     search: filters.search || undefined,
     shipType: filters.shipType === ALL ? undefined : filters.shipType,
     status: filters.status === ALL ? undefined : filters.status,
@@ -97,6 +96,15 @@ export default function MapPage() {
     showTrajectory ? (activeVessel?.mmsi ?? null) : null,
     trajectoryHours
   );
+
+  // Playback (VesselHistoryPanel's play/pause + scrub) only makes sense
+  // once the user has actually picked a window for the active vessel —
+  // the legacy `filters.showHistorical` toggle path has no playback
+  // controls anywhere, so it never has a progress worth animating.
+  const playbackActive = historyRequested && historyVesselMmsi === activeVessel?.mmsi;
+  const playbackPosition = playbackActive
+    ? interpolateTrackPosition(positions ?? [], playbackProgress)
+    : null;
   const { data: trajectory } = useTrajectoryPrediction(
     showPredicted ? (activeVessel?.mmsi ?? null) : null,
     predictionHorizonMinutes
@@ -132,6 +140,7 @@ export default function MapPage() {
         onSelectVessel={handleSelectVessel}
         historicalTrack={showTrajectory ? (positions ?? []) : []}
         predictedRoute={showPredicted ? (trajectory?.points ?? []) : []}
+        playbackPosition={playbackPosition}
         tileLayerId={filters.tileLayerId}
         resetSignal={resetSignal}
         cluster
@@ -147,18 +156,10 @@ export default function MapPage() {
           ABOVE the detail sheet's (z-[2000]): on a narrower viewport the
           sheet's width plus a panel's width can exceed the screen width,
           and when that overlap happens the sheet must not be the one
-          left on top — that made the panel's selects unclickable. */}
-      <div className="pointer-events-none fixed top-[4.25rem] left-3 z-[2100]">
-        <div className="pointer-events-auto">
-          {isLoading ? (
-            <div className="h-fit rounded-md border border-border bg-card/95 px-3 py-1.5 text-xs text-muted-foreground shadow-lg backdrop-blur">
-              {t("Loading fleet…")}
-            </div>
-          ) : (
-            <FleetStatusOverview vessels={vessels} />
-          )}
-        </div>
-      </div>
+          left on top — that made the panel's selects unclickable. Nothing
+          sits top-left any more (that's the map's own zoom control's
+          spot) — the fleet counts live in the global StatusBar footer
+          instead. */}
       <div className="pointer-events-none fixed top-[4.25rem] right-3 z-[2100]">
         <div className="pointer-events-auto">
           <MapControlsPanel
@@ -175,7 +176,7 @@ export default function MapPage() {
           />
         </div>
       </div>
-      <div className="pointer-events-none fixed right-3 bottom-11 z-[2100]">
+      <div className="pointer-events-none fixed right-3 bottom-16 z-[2100]">
         <div className="pointer-events-auto">
           <MapLegend />
         </div>

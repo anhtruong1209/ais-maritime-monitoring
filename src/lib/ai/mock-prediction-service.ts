@@ -7,6 +7,12 @@ import type {
 } from "./prediction-service";
 
 const KNOTS_TO_KM_PER_MIN = 1.852 / 60;
+const TRAJECTORY_MODEL_NAME = "Demo AI Trajectory Model";
+const ETA_MODEL_NAME = "Demo AI ETA Model";
+// Confidence-corridor prep (see PredictedPoint.confidenceRadiusKm): widens
+// as confidence drops, purely a function of confidence so it's mocked
+// consistently — not a real predictive interval from a trained model.
+const MAX_CORRIDOR_RADIUS_KM = 6;
 
 /**
  * DEMO / MOCK AI PREDICTION provider.
@@ -32,6 +38,7 @@ export class MockPredictionService implements PredictionService {
         horizonMinutes,
         points: [],
         isMock: true,
+        modelName: TRAJECTORY_MODEL_NAME,
       };
     }
 
@@ -48,13 +55,22 @@ export class MockPredictionService implements PredictionService {
       // Small deterministic course drift so the predicted track isn't a
       // perfectly rigid line — stands in for real trajectory uncertainty.
       const drift = Math.sin(i / 3) * 4;
-      cursor = destinationPoint(cursor, latest.cog + drift, distanceKm);
+      const legBearing = latest.cog + drift;
+      cursor = destinationPoint(cursor, legBearing, distanceKm);
+
+      const confidence = Math.max(0.35, 0.95 - i * (0.6 / steps));
+      const confidenceRadiusKm = Number((MAX_CORRIDOR_RADIUS_KM * (1 - confidence)).toFixed(2));
+      const upperBound = destinationPoint(cursor, legBearing + 90, confidenceRadiusKm);
+      const lowerBound = destinationPoint(cursor, legBearing - 90, confidenceRadiusKm);
 
       points.push({
         timestamp: new Date(baseTime + i * stepMinutes * 60_000).toISOString(),
         latitude: cursor.latitude,
         longitude: cursor.longitude,
-        confidence: Math.max(0.35, 0.95 - i * (0.6 / steps)),
+        confidence,
+        confidenceRadiusKm,
+        upperBound: { latitude: upperBound.latitude, longitude: upperBound.longitude },
+        lowerBound: { latitude: lowerBound.latitude, longitude: lowerBound.longitude },
       });
     }
 
@@ -64,6 +80,7 @@ export class MockPredictionService implements PredictionService {
       horizonMinutes,
       points,
       isMock: true,
+      modelName: TRAJECTORY_MODEL_NAME,
     };
   }
 
@@ -81,6 +98,9 @@ export class MockPredictionService implements PredictionService {
         confidence: 0,
         errorMarginMinutes: 0,
         isMock: true,
+        modelName: ETA_MODEL_NAME,
+        remainingDistanceKm: 0,
+        currentSpeedKnots: 0,
       };
     }
 
@@ -104,6 +124,9 @@ export class MockPredictionService implements PredictionService {
       confidence: Number(confidence.toFixed(2)),
       errorMarginMinutes,
       isMock: true,
+      modelName: ETA_MODEL_NAME,
+      remainingDistanceKm: Number(distanceKm.toFixed(1)),
+      currentSpeedKnots: Number(latest.sog.toFixed(1)),
     };
   }
 }

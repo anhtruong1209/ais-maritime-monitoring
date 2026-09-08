@@ -108,6 +108,11 @@ export function mapPrediction(row: PredictionRow): Prediction {
     predictedEta: row.predicted_eta,
     confidence: row.confidence,
     metadata: row.metadata,
+    modelName: row.model_name,
+    actualLatitude: row.actual_latitude,
+    actualLongitude: row.actual_longitude,
+    actualEta: row.actual_eta,
+    errorMinutes: row.error_minutes,
   };
 }
 

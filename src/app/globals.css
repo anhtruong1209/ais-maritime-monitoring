@@ -205,3 +205,19 @@
     stroke-dashoffset: -10;
   }
 }
+
+/* Pulsing halo behind the historical-playback marker, so the "ghost"
+   replay position reads as actively moving/live rather than a static pin. */
+.playback-marker-pulse {
+  animation: playback-marker-ping 1.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes playback-marker-ping {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}

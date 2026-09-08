@@ -65,6 +65,28 @@ export function createPortIcon(): L.DivIcon {
   });
 }
 
+/** Historical-playback "ghost" marker — same hull shape as a real vessel
+ * icon so it reads as "a vessel", but a distinct neutral blue with a
+ * pulsing ring so it's never mistaken for the vessel's real, current-
+ * position marker (which stays put at its actual latest fix). */
+export function createPlaybackIcon(cog: number): L.DivIcon {
+  return L.divIcon({
+    html: `
+      <div style="position: relative; width: 26px; height: 26px;">
+        <div class="playback-marker-pulse" style="position:absolute; inset:0; border-radius:9999px; background:#2563eb33;"></div>
+        <svg width="26" height="26" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+          style="position:relative; transform: rotate(${cog}deg); transform-origin: center; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.7));">
+          <path d="M12 0.5 L20.5 21 L12 16.5 L3.5 21 Z" fill="#2563eb"
+            stroke="#eff6ff" stroke-width="1.75" stroke-linejoin="round" />
+        </svg>
+      </div>
+    `,
+    className: "playback-marker-icon",
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+  });
+}
+
 /** Warning marker for an anomaly location, independent of any vessel icon. */
 export function createAnomalyIcon(): L.DivIcon {
   return L.divIcon({

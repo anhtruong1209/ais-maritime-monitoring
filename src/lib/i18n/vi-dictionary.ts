@@ -154,15 +154,53 @@ export const VI_DICTIONARY: Record<string, string> = {
   "DEMO DATA": "DỮ LIỆU DEMO",
 
   // Predictions
-  "Trajectory Prediction": "Dự đoán hành trình",
-  "ETA Prediction": "Dự đoán thời gian đến",
+  "AI Trajectory Prediction": "Dự đoán hành trình AI",
+  "AI ETA Prediction": "Dự đoán thời gian đến (AI)",
+  "DEMO AI PREDICTION": "DEMO – DỰ ĐOÁN AI",
+  Model: "Mô hình",
+  "Prediction timestamp": "Thời điểm dự đoán",
   Horizon: "Tầm dự đoán",
   "Predicted Points": "Số điểm dự đoán",
   "Final Confidence": "Độ tin cậy cuối",
   Confidence: "Độ tin cậy",
   "Error Margin": "Sai số",
+  "Expected range": "Khoảng thời gian dự kiến",
+  "Remaining distance": "Quãng đường còn lại",
+  "Current speed": "Tốc độ hiện tại",
+  "AI ETA": "ETA (AI)",
   "Destination port": "Cảng đến",
   "Auto (AIS reported destination)": "Tự động (theo điểm đến AIS báo cáo)",
+
+  // ETA comparison
+  "ETA Comparison": "So sánh thời gian đến",
+  "AIS / Traditional ETA": "ETA theo AIS / truyền thống",
+  "Actual arrival": "Thời gian đến thực tế",
+  "Not arrived yet": "Chưa đến",
+  "AI error": "Sai số AI",
+  min: "phút",
+
+  // AI Insight
+  "AI Insight": "Nhận định AI",
+
+  // AI destination prediction (prep only)
+  "AI Destination Prediction": "Dự đoán điểm đến (AI)",
+  "Coming in next AI phase": "Sẽ có trong giai đoạn AI tiếp theo",
+  "Will estimate the vessel's most likely destination port from its trajectory even when AIS reports none.":
+    "Sẽ ước tính cảng đến khả năng cao nhất của tàu dựa trên hành trình, kể cả khi AIS không báo cáo điểm đến.",
+
+  // Vessel detail sections
+  "Core AIS Data": "Dữ liệu AIS cốt lõi",
+  Voyage: "Hành trình",
+  "AI Prediction": "Dự đoán AI",
+  "No open alerts for this vessel.": "Tàu này chưa có cảnh báo nào đang mở.",
+
+  // Voyage progress
+  Progress: "Tiến độ",
+
+  // Playback
+  Play: "Phát",
+  Pause: "Tạm dừng",
+  "Playback position": "Vị trí phát lại",
 
   // Fleet detail page
   "Fleet Position": "Vị trí đội tàu",

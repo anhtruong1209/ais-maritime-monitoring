@@ -1,7 +1,13 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { DEFAULT_PREDICTION_HORIZON_MINUTES } from "@/lib/constants";
+
+// Full historical-track playback runs over this many milliseconds,
+// regardless of how long the actual selected window (1h vs 24h) spans —
+// a fixed, comfortable-to-watch demo speed rather than real-time replay.
+const PLAYBACK_DURATION_MS = 15_000;
+const PLAYBACK_TICK_MS = 100;
 
 interface VesselDetailContextValue {
   selectedMmsi: string | null;
@@ -31,6 +37,12 @@ interface VesselDetailContextValue {
   predictionRequested: boolean;
   /** Which vessel predictionHorizonMinutes/predictionRequested apply to. */
   predictionVesselMmsi: string | null;
+  /** 0-1 position along the currently-loaded historical track. Purely
+   * client-side (see src/lib/map/playback.ts) — never triggers a fetch. */
+  playbackProgress: number;
+  setPlaybackProgress: (progress: number) => void;
+  playbackPlaying: boolean;
+  togglePlayback: () => void;
 }
 
 const VesselDetailContext = createContext<VesselDetailContextValue | null>(null);
@@ -45,6 +57,8 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
   );
   const [predictionRequested, setPredictionRequested] = useState(false);
   const [predictionVesselMmsi, setPredictionVesselMmsi] = useState<string | null>(null);
+  const [playbackProgress, setPlaybackProgress] = useState(0);
+  const [playbackPlaying, setPlaybackPlaying] = useState(false);
 
   const openVessel = useCallback((mmsi: string) => {
     setSelectedMmsi(mmsi);
@@ -57,18 +71,25 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
     // window, which is a fine cost for a bug-free default.
     setHistoryRequested(false);
     setPredictionRequested(false);
+    setPlaybackPlaying(false);
+    setPlaybackProgress(0);
   }, []);
 
   const closeVessel = useCallback(() => {
     setSelectedMmsi(null);
     setHistoryRequested(false);
     setPredictionRequested(false);
+    setPlaybackPlaying(false);
+    setPlaybackProgress(0);
   }, []);
 
   const setHistoryHours = useCallback((hours: number, mmsi: string) => {
     setHistoryHoursState(hours);
     setHistoryRequested(true);
     setHistoryVesselMmsi(mmsi);
+    // A different window is a different track to replay — start over.
+    setPlaybackPlaying(false);
+    setPlaybackProgress(0);
   }, []);
 
   const setPredictionHorizonMinutes = useCallback((minutes: number, mmsi: string) => {
@@ -76,6 +97,32 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
     setPredictionRequested(true);
     setPredictionVesselMmsi(mmsi);
   }, []);
+
+  const togglePlayback = useCallback(() => {
+    setPlaybackPlaying((wasPlaying) => {
+      // Restart from the beginning if it had already finished.
+      if (!wasPlaying) {
+        setPlaybackProgress((p) => (p >= 1 ? 0 : p));
+      }
+      return !wasPlaying;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!playbackPlaying) return;
+    const step = PLAYBACK_TICK_MS / PLAYBACK_DURATION_MS;
+    const id = setInterval(() => {
+      setPlaybackProgress((p) => {
+        const next = p + step;
+        if (next >= 1) {
+          setPlaybackPlaying(false);
+          return 1;
+        }
+        return next;
+      });
+    }, PLAYBACK_TICK_MS);
+    return () => clearInterval(id);
+  }, [playbackPlaying]);
 
   const value = useMemo(
     () => ({
@@ -90,6 +137,10 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
       setPredictionHorizonMinutes,
       predictionRequested,
       predictionVesselMmsi,
+      playbackProgress,
+      setPlaybackProgress,
+      playbackPlaying,
+      togglePlayback,
     }),
     [
       selectedMmsi,
@@ -103,6 +154,9 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
       setPredictionHorizonMinutes,
       predictionRequested,
       predictionVesselMmsi,
+      playbackProgress,
+      playbackPlaying,
+      togglePlayback,
     ]
   );
 

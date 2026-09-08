@@ -1,15 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { AiInsightCard } from "./AiInsightCard";
 import { EtaCard } from "./EtaCard";
+import { EtaComparisonCard } from "./EtaComparisonCard";
 import { PortEtaPicker } from "./PortEtaPicker";
 import { PredictionPanel } from "./PredictionPanel";
 import { useEtaPrediction, useTrajectoryPrediction } from "@/hooks/use-predictions";
+import { useVesselVoyages } from "@/hooks/use-vessel-voyages";
 import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 
 /**
  * Owns everything prediction-related for one vessel — horizon picking,
- * the port choice for ETA, and both result cards — as its own subtree
+ * the port choice for ETA, and all AI result cards — as its own subtree
  * that reads the shared prediction state itself, instead of the parent
  * VesselDetailContent reading it. Kept separate specifically so a
  * prediction/ETA interaction only re-renders this section, not the
@@ -30,6 +33,11 @@ export function VesselPredictionSection({ mmsi }: { mmsi: string }) {
     predictionHorizonMinutes
   );
   const { data: eta } = useEtaPrediction(predictionActive ? mmsi : null, portId);
+  // Only needed once a prediction is actually active (for the AIS-ETA side
+  // of the comparison) — no point fetching voyages twice from here and
+  // VesselDetailContent otherwise; TanStack Query dedupes by key anyway.
+  const { data: voyages } = useVesselVoyages(predictionActive ? mmsi : null);
+  const currentVoyage = voyages?.find((v) => v.status === "in_progress") ?? null;
 
   return (
     <>
@@ -42,6 +50,8 @@ export function VesselPredictionSection({ mmsi }: { mmsi: string }) {
         <div className="space-y-2">
           <PortEtaPicker value={portId} onChange={setPortId} />
           {eta && <EtaCard eta={eta} />}
+          {eta && <EtaComparisonCard eta={eta} voyage={currentVoyage} />}
+          {eta && trajectory && <AiInsightCard trajectory={trajectory} eta={eta} />}
         </div>
       )}
     </>

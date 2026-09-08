@@ -465,11 +465,11 @@ const NAV_STATUS = {
 // flag, and route — not stored per-vessel elsewhere, so this is the one
 // source of truth for fleet membership.
 const FLEETS = [
-  { id: uuid(), name: "Doi tau Hai Phong - Cai Lan", description: "Vessels operating the Hai Phong / Cai Lan / Gulf of Tonkin corridor." },
-  { id: uuid(), name: "Doi tau Mien Trung", description: "Vessels operating between Da Nang, Quy Nhon, and Nha Trang." },
-  { id: uuid(), name: "Doi tau Vung Tau - TP.HCM", description: "Vessels operating the Vung Tau / Ho Chi Minh City / Can Tho corridor." },
-  { id: uuid(), name: "Doi tau Danh Ca", description: "Vietnamese fishing vessels, including grounds near Hoang Sa and Truong Sa." },
-  { id: uuid(), name: "Doi tau Quoc Te", description: "Foreign-flagged vessels approaching Vietnamese ports." },
+  { id: uuid(), name: "Đội tàu Hải Phòng - Cái Lân", description: "Vessels operating the Hai Phong / Cai Lan / Gulf of Tonkin corridor." },
+  { id: uuid(), name: "Đội tàu Miền Trung", description: "Vessels operating between Da Nang, Quy Nhon, and Nha Trang." },
+  { id: uuid(), name: "Đội tàu Vũng Tàu - TP.HCM", description: "Vessels operating the Vung Tau / Ho Chi Minh City / Can Tho corridor." },
+  { id: uuid(), name: "Đội tàu Đánh Cá", description: "Vietnamese fishing vessels, including grounds near Hoang Sa and Truong Sa." },
+  { id: uuid(), name: "Đội tàu Quốc Tế", description: "Foreign-flagged vessels approaching Vietnamese ports." },
 ];
 const [FLEET_HAIPHONG, FLEET_MIENTRUNG, FLEET_VUNGTAU, FLEET_FISHING, FLEET_INTL] = FLEETS;
 const HAIPHONG_PORTS = new Set(["Hai Phong", "Cai Lan"]);

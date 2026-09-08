@@ -53,6 +53,11 @@ export interface PredictionRow {
   predicted_eta: string | null;
   confidence: number;
   metadata: Record<string, unknown> | null;
+  model_name: string | null;
+  actual_latitude: number | null;
+  actual_longitude: number | null;
+  actual_eta: string | null;
+  error_minutes: number | null;
 }
 
 export interface AnomalyRow {

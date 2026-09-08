@@ -19,7 +19,7 @@ import {
   VIETNAM_CENTER,
   VIETNAM_DEFAULT_ZOOM,
 } from "@/lib/map/config";
-import { createPortIcon, createVesselIcon } from "@/lib/map/icons";
+import { createPlaybackIcon, createPortIcon, createVesselIcon } from "@/lib/map/icons";
 import { AnomalyMarkerLayer } from "./AnomalyMarkerLayer";
 import { PredictedRouteLayer } from "./PredictedRouteLayer";
 import { TrajectoryLayer } from "./TrajectoryLayer";
@@ -49,6 +49,9 @@ export interface MaritimeMapProps {
   onSelectVessel?: (vessel: VesselWithLatestPosition) => void;
   historicalTrack?: AISPosition[];
   predictedRoute?: PredictedPoint[];
+  /** Interpolated position for historical-track playback (see
+   * src/lib/map/playback.ts) — `null` when no playback is active. */
+  playbackPosition?: { latitude: number; longitude: number; cog: number } | null;
   center?: LatLngTuple;
   zoom?: number;
   tileLayerId?: string;
@@ -98,6 +101,26 @@ function SelectionRing({ position }: { position: LatLngTuple | null }) {
 }
 
 /** Attaches Leaflet's built-in metric scale bar (bottom-left). */
+/** The moving "ghost" marker for historical playback — a separate layer
+ * from the vessel's own (fixed, current-position) marker so scrubbing/
+ * playing never touches the main markers array. `null` position (no
+ * active playback) renders nothing. */
+function PlaybackMarker({
+  position,
+}: {
+  position: { latitude: number; longitude: number; cog: number } | null;
+}) {
+  if (!position) return null;
+  return (
+    <Marker
+      position={[position.latitude, position.longitude]}
+      icon={createPlaybackIcon(position.cog)}
+      interactive={false}
+      zIndexOffset={1000}
+    />
+  );
+}
+
 function ScaleControl() {
   const map = useMap();
   useEffect(() => {
@@ -163,6 +186,7 @@ export function MaritimeMapInner({
   onSelectVessel,
   historicalTrack = [],
   predictedRoute = [],
+  playbackPosition = null,
   center = VIETNAM_CENTER,
   zoom = VIETNAM_DEFAULT_ZOOM,
   tileLayerId = DEFAULT_TILE_LAYER_ID,
@@ -291,6 +315,7 @@ export function MaritimeMapInner({
 
       <TrajectoryLayer positions={historicalTrack} />
       <PredictedRouteLayer points={predictedRoute} />
+      <PlaybackMarker position={playbackPosition} />
       <AnomalyMarkerLayer anomalies={anomalies} />
 
       <FlyToSelection target={selectedLatLng} />

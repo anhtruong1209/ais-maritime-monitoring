@@ -5,6 +5,11 @@ export function formatDateTime(iso: string | null | undefined): string {
   return format(new Date(iso), "dd MMM yyyy HH:mm");
 }
 
+export function formatTime(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  return format(new Date(iso), "HH:mm");
+}
+
 export function formatRelativeTime(iso: string | null | undefined): string {
   if (!iso) return "—";
   return `${formatDistanceToNowStrict(new Date(iso))} ago`;

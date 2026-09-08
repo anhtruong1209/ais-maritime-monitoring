@@ -72,6 +72,7 @@ export const PREDICTION_HORIZON_OPTIONS = [
   { label: "1h", minutes: 60 },
   { label: "2h", minutes: 120 },
   { label: "3h", minutes: 180 },
+  { label: "6h", minutes: 360 },
 ] as const;
 
 export const DEFAULT_PREDICTION_HORIZON_MINUTES = 180;

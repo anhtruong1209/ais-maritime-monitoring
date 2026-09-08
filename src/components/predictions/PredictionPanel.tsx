@@ -14,6 +14,12 @@ import type { TrajectoryPredictionResult } from "@/types";
  * only passed in once the caller has actually fetched it for a
  * user-picked horizon (see PredictionHorizonPicker/predictionRequested) —
  * until then this just shows the picker and a prompt.
+ *
+ * Model name + prediction timestamp are always shown alongside the
+ * result — CORE AIS data (what the vessel actually reported) and AI
+ * PREDICTION output (what a model produced from it, and when) must never
+ * blur together, per the "AI is a first-class, clearly-labeled feature"
+ * requirement.
  */
 export function PredictionPanel({
   mmsi,
@@ -30,10 +36,10 @@ export function PredictionPanel({
   return (
     <Card>
       <CardHeader className="flex-row items-center justify-between">
-        <CardTitle className="text-sm font-medium">{t("Trajectory Prediction")}</CardTitle>
+        <CardTitle className="text-sm font-medium">{t("AI Trajectory Prediction")}</CardTitle>
         {trajectory?.isMock && (
           <Badge variant="outline" className="border-amber-500/40 text-amber-400">
-            {t("DEMO / MOCK AI PREDICTION")}
+            {t("DEMO AI PREDICTION")}
           </Badge>
         )}
       </CardHeader>
@@ -50,7 +56,17 @@ export function PredictionPanel({
 
         {!isLoading && trajectory && (
           <>
-            <div className="flex gap-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <div>
+                <p className="text-xs text-muted-foreground">{t("Model")}</p>
+                <p className="text-sm font-medium">{trajectory.modelName}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{t("Prediction timestamp")}</p>
+                <p className="text-sm font-medium tabular-nums">
+                  {formatDateTime(trajectory.generatedAt)}
+                </p>
+              </div>
               <div>
                 <p className="text-xs text-muted-foreground">{t("Horizon")}</p>
                 <p className="text-sm font-medium tabular-nums">{trajectory.horizonMinutes} min</p>

@@ -5,8 +5,11 @@ import { ShipTypeBadge } from "./ShipTypeBadge";
 import { VesselStatusBadge } from "./VesselStatusBadge";
 import { VesselInfoCard } from "./VesselInfoCard";
 import { CurrentAisCard } from "./CurrentAisCard";
+import { VesselAlertsCard } from "./VesselAlertsCard";
 import { VesselVoyagesCard } from "./VesselVoyagesCard";
 import { VesselHistoryPanel } from "./VesselHistoryPanel";
+import { VoyageProgressCard } from "./VoyageProgressCard";
+import { DestinationPredictionStub } from "@/components/predictions/DestinationPredictionStub";
 import { VesselPredictionSection } from "@/components/predictions/VesselPredictionSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,10 +19,20 @@ import { useVesselVoyages } from "@/hooks/use-vessel-voyages";
 import { useLocale } from "@/providers/locale-provider";
 import { deriveVesselStatus } from "@/lib/vessel-status";
 
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="pt-1 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+      {children}
+    </h2>
+  );
+}
+
 /**
  * Everything about one vessel — current AIS, voyages, historical
  * trajectory, AI prediction, and static particulars — stacked in a single
- * scrollable panel (no inner tabs: one thing, scroll to see the rest).
+ * scrollable panel (no inner tabs: one thing, scroll to see the rest),
+ * grouped under section headings so CORE AIS DATA and AI PREDICTION
+ * output never blur into one undifferentiated wall of cards.
  * This is the only place vessel detail lives: it's rendered inside
  * VesselDetailSheet (a side panel, opened over whatever page/map you were
  * already on) rather than as a separate route, so opening it never
@@ -56,6 +69,8 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
   }
 
   const latest = positions?.at(-1) ?? null;
+  const currentVoyage = voyages?.find((v) => v.status === "in_progress") ?? null;
+  const currentPosition = latest ? { latitude: latest.latitude, longitude: latest.longitude } : null;
 
   return (
     <div className="flex h-full flex-col">
@@ -65,7 +80,8 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
         <VesselStatusBadge status={deriveVesselStatus(latest)} />
       </div>
 
-      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+        <SectionHeading>{t("Core AIS Data")}</SectionHeading>
         <div className="grid gap-4 xl:grid-cols-2">
           <CurrentAisCard position={latest} />
           <VesselInfoCard vessel={vessel} />
@@ -80,9 +96,18 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
           </CardContent>
         </Card>
 
+        <SectionHeading>{t("Voyage")}</SectionHeading>
+        {currentVoyage && (
+          <VoyageProgressCard voyage={currentVoyage} currentPosition={currentPosition} />
+        )}
         <VesselVoyagesCard voyages={voyages ?? []} />
 
+        <SectionHeading>{t("AI Prediction")}</SectionHeading>
         <VesselPredictionSection mmsi={mmsi} />
+        <DestinationPredictionStub />
+
+        <SectionHeading>{t("Alerts")}</SectionHeading>
+        <VesselAlertsCard mmsi={mmsi} />
       </div>
     </div>
   );
