@@ -7,7 +7,7 @@ import { MapLegend } from "@/components/map/MapLegend";
 import { useAllVesselsForMap } from "@/hooks/use-vessels";
 import { usePorts } from "@/hooks/use-ports";
 import { useVesselPositions } from "@/hooks/use-vessel-positions";
-import { usePredictions } from "@/hooks/use-predictions";
+import { useTrajectoryPrediction } from "@/hooks/use-predictions";
 import { useOpenAnomalies } from "@/hooks/use-anomalies";
 import { DEFAULT_TILE_LAYER_ID } from "@/lib/map/config";
 import { useLocale } from "@/providers/locale-provider";
@@ -96,9 +96,8 @@ export default function MapPage() {
     showTrajectory ? (activeVessel?.mmsi ?? null) : null,
     trajectoryHours
   );
-  const { data: predictions } = usePredictions(
+  const { data: trajectory } = useTrajectoryPrediction(
     showPredicted ? (activeVessel?.mmsi ?? null) : null,
-    null,
     predictionHorizonMinutes
   );
 
@@ -131,7 +130,7 @@ export default function MapPage() {
         selectedVesselId={activeVesselId}
         onSelectVessel={handleSelectVessel}
         historicalTrack={showTrajectory ? (positions ?? []) : []}
-        predictedRoute={showPredicted ? (predictions?.trajectory.points ?? []) : []}
+        predictedRoute={showPredicted ? (trajectory?.points ?? []) : []}
         tileLayerId={filters.tileLayerId}
         resetSignal={resetSignal}
         cluster

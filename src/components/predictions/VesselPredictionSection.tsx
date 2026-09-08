@@ -4,7 +4,7 @@ import { useState } from "react";
 import { EtaCard } from "./EtaCard";
 import { PortEtaPicker } from "./PortEtaPicker";
 import { PredictionPanel } from "./PredictionPanel";
-import { usePredictions } from "@/hooks/use-predictions";
+import { useEtaPrediction, useTrajectoryPrediction } from "@/hooks/use-predictions";
 import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 
 /**
@@ -15,29 +15,33 @@ import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
  * prediction/ETA interaction only re-renders this section, not the
  * Current AIS / Voyages / History sections sitting next to it in the
  * same scrollable panel.
+ *
+ * Trajectory and ETA are two independent queries (see use-predictions.ts)
+ * so picking a different destination port for ETA doesn't reload/re-show
+ * a loading state for the trajectory prediction, and vice versa.
  */
 export function VesselPredictionSection({ mmsi }: { mmsi: string }) {
   const [portId, setPortId] = useState<string | null>(null);
   const { predictionHorizonMinutes, predictionRequested, predictionVesselMmsi } =
     useVesselDetailDialog();
   const predictionActive = predictionRequested && predictionVesselMmsi === mmsi;
-  const { data: predictions, isLoading } = usePredictions(
+  const { data: trajectory, isLoading } = useTrajectoryPrediction(
     predictionActive ? mmsi : null,
-    portId,
     predictionHorizonMinutes
   );
+  const { data: eta } = useEtaPrediction(predictionActive ? mmsi : null, portId);
 
   return (
     <>
       <PredictionPanel
         mmsi={mmsi}
-        trajectory={predictionActive ? (predictions?.trajectory ?? null) : null}
+        trajectory={predictionActive ? (trajectory ?? null) : null}
         isLoading={predictionActive && isLoading}
       />
       {predictionActive && (
         <div className="space-y-2">
           <PortEtaPicker value={portId} onChange={setPortId} />
-          {predictions && <EtaCard eta={predictions.eta} />}
+          {eta && <EtaCard eta={eta} />}
         </div>
       )}
     </>
