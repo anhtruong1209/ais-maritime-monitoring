@@ -13,7 +13,8 @@ import { useLocale } from "@/providers/locale-provider";
 const AUTO = "auto";
 
 /** Lets the user ask "if it were headed to port X, what's the ETA?"
- * instead of only the vessel's own AIS-reported destination. */
+ * instead of only the vessel's own AIS-reported destination — every
+ * seeded Vietnamese port is selectable here (usePorts has no filtering). */
 export function PortEtaPicker({
   value,
   onChange,
@@ -26,7 +27,7 @@ export function PortEtaPicker({
 
   return (
     <Select value={value ?? AUTO} onValueChange={(v) => onChange(v === AUTO || !v ? null : v)}>
-      <SelectTrigger className="h-10 w-64">
+      <SelectTrigger className="h-10 w-full">
         <SelectValue placeholder={t("Destination port")}>
           {(v: string) => (v === AUTO ? t("Auto (AIS reported destination)") : (ports?.find((p) => p.id === v)?.name ?? v))}
         </SelectValue>

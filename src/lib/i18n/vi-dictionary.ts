@@ -129,8 +129,7 @@ export const VI_DICTIONARY: Record<string, string> = {
   "Nav Status": "Trạng thái hành hải",
   Timestamp: "Thời gian",
   "Vessel not found.": "Không tìm thấy tàu.",
-  "No AIS data available to generate a prediction for this vessel.":
-    "Chưa có dữ liệu AIS để tạo dự đoán cho tàu này.",
+  "Pick a horizon above to generate a prediction.": "Chọn một khung giờ ở trên để tạo dự đoán.",
 
   // Fleets
   vessels: "tàu",
@@ -153,9 +152,6 @@ export const VI_DICTIONARY: Record<string, string> = {
   "DEMO DATA": "DỮ LIỆU DEMO",
 
   // Predictions
-  "AI Predictions": "Dự đoán AI",
-  "Select a vessel above to generate a demo trajectory and ETA prediction.":
-    "Chọn một tàu ở trên để tạo dự đoán hành trình và thời gian đến (demo).",
   "Trajectory Prediction": "Dự đoán hành trình",
   "ETA Prediction": "Dự đoán thời gian đến",
   Horizon: "Tầm dự đoán",
@@ -165,8 +161,6 @@ export const VI_DICTIONARY: Record<string, string> = {
   "Error Margin": "Sai số",
   "Destination port": "Cảng đến",
   "Auto (AIS reported destination)": "Tự động (theo điểm đến AIS báo cáo)",
-  "Loading vessels…": "Đang tải danh sách tàu…",
-  "Select a moving vessel…": "Chọn một tàu đang di chuyển…",
 
   // Fleet detail page
   "Fleet Position": "Vị trí đội tàu",

@@ -4,7 +4,6 @@ import {
   type LucideIcon,
   Map,
   Route,
-  Sparkles,
   Ship,
   Users,
 } from "lucide-react";
@@ -21,6 +20,5 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/fleets", label: "Fleets", icon: Users },
   { href: "/map", label: "Map", icon: Map },
   { href: "/voyages", label: "Voyages", icon: Route },
-  { href: "/predictions", label: "Predictions", icon: Sparkles },
   { href: "/alerts", label: "Alerts", icon: AlertTriangle },
 ];

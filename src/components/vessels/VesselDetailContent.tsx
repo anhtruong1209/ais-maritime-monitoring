@@ -7,16 +7,13 @@ import { VesselInfoCard } from "./VesselInfoCard";
 import { CurrentAisCard } from "./CurrentAisCard";
 import { VesselVoyagesCard } from "./VesselVoyagesCard";
 import { VesselHistoryPanel } from "./VesselHistoryPanel";
-import { EtaCard } from "@/components/predictions/EtaCard";
-import { PredictionPanel } from "@/components/predictions/PredictionPanel";
+import { VesselPredictionSection } from "@/components/predictions/VesselPredictionSection";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useVessel } from "@/hooks/use-vessel";
-import { usePredictions } from "@/hooks/use-predictions";
 import { useVesselPositions } from "@/hooks/use-vessel-positions";
 import { useVesselVoyages } from "@/hooks/use-vessel-voyages";
 import { useLocale } from "@/providers/locale-provider";
-import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 import { deriveVesselStatus } from "@/lib/vessel-status";
 
 /**
@@ -27,17 +24,17 @@ import { deriveVesselStatus } from "@/lib/vessel-status";
  * VesselDetailSheet (a side panel, opened over whatever page/map you were
  * already on) rather than as a separate route, so opening it never
  * unmounts the map or re-fetches the fleet.
+ *
+ * Each section below (History, Predictions) owns its own shared-state
+ * subscription and data fetching rather than this component reading it
+ * on their behalf — that keeps an interaction in one section (e.g.
+ * picking a prediction horizon) from re-rendering the sections next to
+ * it that have nothing to do with it.
  */
 export function VesselDetailContent({ mmsi }: { mmsi: string }) {
   const { data: vessel, isLoading: vesselLoading, isError } = useVessel(mmsi);
   const { data: positions } = useVesselPositions(mmsi, 24);
   const { data: voyages } = useVesselVoyages(mmsi);
-  const { predictionHorizonMinutes } = useVesselDetailDialog();
-  const { data: predictions, isLoading: predictionsLoading } = usePredictions(
-    mmsi,
-    null,
-    predictionHorizonMinutes
-  );
   const { t } = useLocale();
 
   if (vesselLoading) {
@@ -85,18 +82,7 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
 
         <VesselVoyagesCard voyages={voyages ?? []} />
 
-        {predictionsLoading && <Skeleton className="h-56 w-full" />}
-        {!predictionsLoading && !predictions && (
-          <p className="text-sm text-muted-foreground">
-            {t("No AIS data available to generate a prediction for this vessel.")}
-          </p>
-        )}
-        {predictions && (
-          <>
-            <PredictionPanel trajectory={predictions.trajectory} />
-            <EtaCard eta={predictions.eta} />
-          </>
-        )}
+        <VesselPredictionSection mmsi={mmsi} />
       </div>
     </div>
   );

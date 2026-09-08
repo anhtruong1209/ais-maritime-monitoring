@@ -7,24 +7,26 @@ import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 
 /**
  * How far ahead the trajectory prediction looks — same pill-button style
- * as VesselHistoryPanel's window picker. Unlike history, a horizon is
- * always "selected" (there's always a prediction shown, just a shorter or
- * longer one), so the current value shows as active from the start
- * instead of starting blank.
+ * and same "nothing selected until clicked" rule as VesselHistoryPanel's
+ * window picker: a default horizon exists internally, but no button
+ * should look chosen (and nothing should draw on the map) until the user
+ * actually picks one.
  */
-export function PredictionHorizonPicker() {
-  const { predictionHorizonMinutes, setPredictionHorizonMinutes } = useVesselDetailDialog();
+export function PredictionHorizonPicker({ mmsi }: { mmsi: string }) {
+  const { predictionHorizonMinutes, predictionRequested, predictionVesselMmsi, setPredictionHorizonMinutes } =
+    useVesselDetailDialog();
   const { t } = useLocale();
 
   return (
     <div className="flex flex-wrap gap-1.5">
       {PREDICTION_HORIZON_OPTIONS.map((opt) => {
-        const active = predictionHorizonMinutes === opt.minutes;
+        const active =
+          predictionRequested && predictionVesselMmsi === mmsi && predictionHorizonMinutes === opt.minutes;
         return (
           <button
             key={opt.minutes}
             type="button"
-            onClick={() => setPredictionHorizonMinutes(opt.minutes)}
+            onClick={() => setPredictionHorizonMinutes(opt.minutes, mmsi)}
             className={cn(
               "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
               active

@@ -40,6 +40,8 @@ export default function MapPage() {
     historyRequested,
     historyVesselMmsi,
     predictionHorizonMinutes,
+    predictionRequested,
+    predictionVesselMmsi,
     openVessel,
     closeVessel,
   } = useVesselDetailDialog();
@@ -74,11 +76,10 @@ export default function MapPage() {
     (historyRequested && historyVesselMmsi === activeVessel?.mmsi) || filters.showHistorical;
   const trajectoryHours = historyRequested ? historyHours : 24;
 
-  // Unlike history (which needs a window picked — 1h vs 24h materially
-  // changes what's drawn), a prediction has nothing to choose: opening a
-  // vessel's detail panel is enough to show its one predicted route,
-  // mirroring the same "dashed line just shows up" experience as history.
-  const showPredicted = Boolean(sheetVessel) || filters.showPredicted;
+  // Same rule as history: nothing drawn until the user actually picks a
+  // horizon for the vessel that's currently active.
+  const showPredicted =
+    (predictionRequested && predictionVesselMmsi === activeVessel?.mmsi) || filters.showPredicted;
 
   // Closing the detail panel should fully release the map's selection too
   // (stop the highlight ring / fly-to-lock), not leave it "stuck" on the
