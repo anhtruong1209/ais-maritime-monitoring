@@ -14,6 +14,12 @@ export function useOpenAnomalies() {
       fetchJson<AnomaliesResponse>("/api/anomalies?status=open&pageSize=100").then(
         (res) => res.data
       ),
-    refetchInterval: 60_000,
+    // Was 60s — this demo's anomalies don't actually change between
+    // fetches any more than the vessel list does (see useAllVesselsForMap),
+    // and every refetch forced a full marker-cluster rebuild (see
+    // FlaggedVesselRings) since "flagged" used to be baked into each
+    // vessel's own icon. That's fixed now, but there's still no reason to
+    // poll static data this often.
+    refetchInterval: 5 * 60_000,
   });
 }

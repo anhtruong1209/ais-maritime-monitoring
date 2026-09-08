@@ -100,6 +100,33 @@ function SelectionRing({ position }: { position: LatLngTuple | null }) {
   );
 }
 
+/**
+ * Red rings around vessels with an open anomaly — a separate layer from
+ * the main markers array for the same reason as SelectionRing. This one
+ * matters even more at fleet scale: open anomalies refetch periodically,
+ * and baking "flagged" into each vessel's own icon meant that refresh
+ * alone forced the *entire* marker-cluster tree (thousands of vessels) to
+ * be torn down and rebuilt on a timer — the likely cause of the map
+ * hitching/hanging at a few thousand vessels regardless of anything the
+ * user did. This layer recomputing on that same refresh is cheap by
+ * comparison: a handful of CircleMarkers, not a full cluster rebuild.
+ */
+function FlaggedVesselRings({ positions }: { positions: LatLngTuple[] }) {
+  return (
+    <>
+      {positions.map((position, i) => (
+        <CircleMarker
+          key={i}
+          center={position}
+          radius={12}
+          pathOptions={{ color: "#ef4444", weight: 2, fill: false }}
+          interactive={false}
+        />
+      ))}
+    </>
+  );
+}
+
 /** Attaches Leaflet's built-in metric scale bar (bottom-left). */
 /** The moving "ghost" marker for historical playback — a separate layer
  * from the vessel's own (fixed, current-position) marker so scrubbing/
@@ -215,6 +242,16 @@ export function MaritimeMapInner({
     [anomalies]
   );
 
+  const flaggedPositions = useMemo(() => {
+    const positions: LatLngTuple[] = [];
+    for (const vessel of vessels) {
+      if (flaggedVesselIds.has(vessel.id) && vessel.latestPosition) {
+        positions.push([vessel.latestPosition.latitude, vessel.latestPosition.longitude]);
+      }
+    }
+    return positions;
+  }, [vessels, flaggedVesselIds]);
+
   const vesselsWithPosition = useMemo(
     () => vessels.filter((v) => v.latestPosition),
     [vessels]
@@ -237,8 +274,10 @@ export function MaritimeMapInner({
     [vesselsWithPosition]
   );
 
-  // Deliberately does NOT depend on selectedVesselId — see SelectionRing's
-  // comment above. Only actual vessel/anomaly data changes rebuild this.
+  // Deliberately does NOT depend on selectedVesselId or flaggedVesselIds —
+  // see SelectionRing's and FlaggedVesselRings' comments above. Only
+  // actual vessel data changes rebuild this (not anomalies refreshing on
+  // a timer), which is what keeps this affordable at fleet scale.
   const markers = useMemo(
     () =>
       vesselsWithPosition.map((vessel) => {
@@ -252,7 +291,6 @@ export function MaritimeMapInner({
               cog: pos.cog,
               moving: vessel.status === "moving",
               offline: vessel.status === "offline",
-              flagged: flaggedVesselIds.has(vessel.id),
             })}
             eventHandlers={{
               click: () => onSelectVessel?.(vessel),
@@ -260,7 +298,7 @@ export function MaritimeMapInner({
           />
         );
       }),
-    [vesselsWithPosition, flaggedVesselIds, onSelectVessel]
+    [vesselsWithPosition, onSelectVessel]
   );
 
   return (
@@ -322,6 +360,7 @@ export function MaritimeMapInner({
       <FlyToReset signal={resetSignal} center={center} zoom={zoom} />
       <ScaleControl />
       <SelectionRing position={selectedLatLng} />
+      <FlaggedVesselRings positions={flaggedPositions} />
       <MapResizeHandler />
       <ZoomTracker onZoomChange={setCurrentZoom} />
     </MapContainer>

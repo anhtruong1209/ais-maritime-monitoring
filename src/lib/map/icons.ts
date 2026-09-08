@@ -9,8 +9,6 @@ interface VesselIconOptions {
   /** No recent AIS fix — renders gray regardless of ship type instead of
    * just a dimmer version of its usual color. */
   offline?: boolean;
-  /** Has an open (unresolved) anomaly — draws a warning ring around the icon. */
-  flagged?: boolean;
 }
 
 // Sized and styled after MarineTraffic's bold, high-contrast vessel arrows —
@@ -19,11 +17,13 @@ interface VesselIconOptions {
 // Every vessel renders as the same arrow/hull shape regardless of motion
 // state (MarineTraffic does this too) — only opacity changes for
 // anchored/stopped/offline vessels, so orientation (COG/heading) always
-// reads clearly instead of collapsing to an undirected dot. The "selected"
-// state is a separate ring drawn by SelectionRing in MaritimeMapInner, not
-// part of this icon — that keeps the icon (and the marker array it lives
-// in) stable across selection changes; see that component's comment.
-function vesselSvg({ shipType, cog, moving, offline, flagged }: VesselIconOptions) {
+// reads clearly instead of collapsing to an undirected dot. Neither
+// "selected" (SelectionRing) nor "flagged" (FlaggedVesselRings) is part of
+// this icon — both are separate overlay layers in MaritimeMapInner, so
+// the full marker/cluster tree (all vessels, expensive to rebuild at
+// fleet scale) never has to be recomputed just because the open-anomaly
+// list refreshed or a selection changed.
+function vesselSvg({ shipType, cog, moving, offline }: VesselIconOptions) {
   const color = offline ? OFFLINE_VESSEL_COLOR : SHIP_TYPE_COLORS[shipType];
   const strokeWidth = 1.75;
   const opacity = moving ? 1 : 0.75;
@@ -31,11 +31,6 @@ function vesselSvg({ shipType, cog, moving, offline, flagged }: VesselIconOption
   return `
     <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
       style="transform: rotate(${cog}deg); transform-origin: center; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.65));">
-      ${
-        flagged
-          ? `<circle cx="12" cy="12" r="11" fill="none" stroke="#ef4444" stroke-width="2" />`
-          : ""
-      }
       <path d="M12 0.5 L20.5 21 L12 16.5 L3.5 21 Z" fill="${color}" fill-opacity="${opacity}"
         stroke="#04070d" stroke-width="${strokeWidth}" stroke-linejoin="round" />
     </svg>
