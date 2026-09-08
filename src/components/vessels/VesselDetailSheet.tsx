@@ -25,7 +25,11 @@ export function VesselDetailSheet() {
       <DialogPrimitive.Portal>
         <DialogPrimitive.Popup
           className={cn(
-            "fixed top-0 right-0 z-40 flex h-dvh w-full translate-x-0 flex-col border-l border-border bg-popover text-popover-foreground shadow-2xl transition-transform duration-200 ease-in-out sm:max-w-2xl",
+            // Leaflet's own panes/controls use z-index up to 1000 internally
+            // (and MapLibre's canvas sits in one of those panes too), so
+            // this has to clear that comfortably or the map renders on top
+            // of the panel instead of the panel floating above the map.
+            "fixed top-0 right-0 z-[2000] flex h-dvh w-full translate-x-0 flex-col border-l border-border bg-popover text-popover-foreground shadow-2xl transition-transform duration-200 ease-in-out sm:max-w-2xl",
             "data-starting-style:translate-x-full data-ending-style:translate-x-full"
           )}
         >
