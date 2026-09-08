@@ -87,6 +87,33 @@ function ScaleControl() {
   return null;
 }
 
+/**
+ * Leaflet measures its container's size once at creation and doesn't
+ * notice later size changes on its own. When the map mounts inside a
+ * dialog/modal (still animating open, or 0-sized until layout settles) or
+ * any other container whose size changes after mount, Leaflet's cached
+ * size goes stale and tiles/panes render offset or oversized. A
+ * ResizeObserver + invalidateSize() keeps it correct in every case.
+ */
+function MapResizeHandler() {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    // Correct once immediately (covers the "mounted while still animating
+    // in" case, which may not itself fire a ResizeObserver callback)...
+    const raf = requestAnimationFrame(() => map.invalidateSize());
+    // ...and again for any later resize (sidebar toggling, window resize
+    // while the container's box actually changes, etc).
+    const observer = new ResizeObserver(() => map.invalidateSize());
+    observer.observe(container);
+    return () => {
+      cancelAnimationFrame(raf);
+      observer.disconnect();
+    };
+  }, [map]);
+  return null;
+}
+
 function FlyToReset({
   signal,
   center,
@@ -158,6 +185,11 @@ export function MaritimeMapInner({
     <MapContainer
       center={center}
       zoom={zoom}
+      // Set explicitly on the Map itself (not just the tile layer): the
+      // vector basemap (MapLibre, bridged in as a raw layer) doesn't carry
+      // a `maxZoom` option the way a Leaflet <TileLayer> does, and without
+      // one the marker-cluster plugin throws "Map has no maxZoom specified".
+      maxZoom={19}
       scrollWheelZoom
       className={className ?? "h-full w-full"}
     >
@@ -200,6 +232,7 @@ export function MaritimeMapInner({
       <FlyToReset signal={resetSignal} center={center} zoom={zoom} />
       <ScaleControl />
       <MapReadout />
+      <MapResizeHandler />
     </MapContainer>
   );
 }

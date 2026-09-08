@@ -48,7 +48,8 @@ export async function getFleetVessels(fleetId: string): Promise<VesselWithLatest
   const { data, error } = await supabase
     .from("fleet_vessels_with_latest_position")
     .select("*")
-    .eq("fleet_id", fleetId);
+    .eq("fleet_id", fleetId)
+    .limit(2000);
 
   if (error) throw new Error(`Failed to load fleet vessels: ${error.message}`);
   return ((data ?? []) as VesselWithLatestPositionRow[]).map(mapVesselWithLatestPosition);

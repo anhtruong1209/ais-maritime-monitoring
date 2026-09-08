@@ -144,7 +144,8 @@ export async function getAllVesselsWithLatestPosition(): Promise<
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("vessels_with_latest_position")
-    .select("*");
+    .select("*")
+    .limit(2000);
 
   if (error) throw new Error(`Failed to load vessels: ${error.message}`);
   return ((data ?? []) as VesselWithLatestPositionRow[]).map(

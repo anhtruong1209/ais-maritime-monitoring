@@ -37,12 +37,12 @@ export function useVessels(filters: VesselFilters) {
   });
 }
 
-/** All vessels (up to the 500-row cap) — used by the full map view. */
+/** All vessels (up to the 1500-row cap) — used by the full map view. */
 export function useAllVesselsForMap(filters: Omit<VesselFilters, "page" | "pageSize">) {
   return useQuery({
     queryKey: ["vessels", "map", filters],
     queryFn: () =>
-      fetchJson<VesselsResponse>(`/api/vessels?${buildQuery({ ...filters, pageSize: 500 })}`),
+      fetchJson<VesselsResponse>(`/api/vessels?${buildQuery({ ...filters, pageSize: 1500 })}`),
     refetchInterval: 60_000,
   });
 }

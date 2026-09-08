@@ -13,14 +13,21 @@ service can be dropped in later without touching the UI.
 
 ## 1. Overview
 
-- Live-style fleet map centered on Vietnam, with 300+ synthetic demo vessels
-  moving along realistic coastal and international sea lanes.
-- Vessel monitoring, search, filtering, and per-vessel detail with historical
-  AIS trajectories.
+- Live-style fleet map centered on Vietnam, with 1,000 synthetic demo vessels
+  and ~300k AIS positions moving along realistic coastal and international
+  sea lanes (multiple chained voyage legs per vessel, not just one trip).
+- Vessel monitoring, search, filtering, and a shared vessel-detail modal
+  (opened from any table, the map, or a fleet roster) with historical AIS
+  trajectories and paginated raw AIS message history.
+- Fleet management: vessels are grouped into named fleets (by corridor —
+  Hai Phong, Central VN, Vung Tau/HCMC — plus fishing and international
+  fleets); `/fleets` lists them, `/fleets/[id]` shows a fleet's roster + map.
 - Voyage history per vessel and fleet-wide.
 - AI trajectory + ETA prediction screen, backed by a swappable
-  `PredictionService` provider (mock today, FastAPI later).
-- Alerts/anomalies screen with a schema ready for real anomaly detection.
+  `PredictionService` provider (mock today, FastAPI later), including an
+  arbitrary "what's the ETA if headed to port X" picker.
+- Alerts/anomalies screen with a schema ready for real anomaly detection,
+  drawn directly on the map as warning markers.
 
 ## 2. Features
 
@@ -28,11 +35,18 @@ service can be dropped in later without touching the UI.
 |---|---|---|
 | Dashboard | `/dashboard` | Fleet KPIs, vessel-type breakdown, mini map, recent activity, recent alerts |
 | Vessels | `/vessels` | Searchable/filterable/paginated vessel table |
-| Vessel Detail | `/vessels/[mmsi]` | Vessel info, current AIS, voyages, historical trajectory map, recent AIS messages |
-| Full Map | `/map` | Full operational map: clustering, filters, historical/predicted trajectory toggles, basemap switch |
+| Vessel Detail | `/vessels/[mmsi]` (also a modal) | Vessel info, current AIS, voyages, historical trajectory map, paginated AIS messages |
+| Fleets | `/fleets`, `/fleets/[id]` | Fleet list + roster/map for one fleet |
+| Full Map | `/map` | Full operational map: clustering, filters, historical/predicted trajectory toggles, anomaly markers, basemap switch |
 | Voyages | `/voyages`, `/voyages/[id]` | Voyage list + detail with trajectory replay |
-| Predictions | `/predictions` | DEMO/MOCK AI trajectory + ETA prediction per vessel |
+| Predictions | `/predictions` | DEMO/MOCK AI trajectory + ETA prediction per vessel, with a destination-port picker |
 | Alerts | `/alerts` | Anomaly list (route deviation, abnormal speed, course change, AIS gap, long stationary) |
+
+Vessel detail is a **modal**, not a separate navigation, everywhere it's
+triggered from inside the app (`VesselDetailProvider` /
+`useVesselDetailDialog()` in `src/providers/vessel-detail-provider.tsx`).
+The `/vessels/[mmsi]` route still exists and renders the same content, so
+direct links / bookmarks / shares keep working.
 
 ## 3. Architecture
 
@@ -75,20 +89,40 @@ Design decisions:
 
 ## 4. Tech Stack
 
-Next.js (App Router) · TypeScript (strict) · Tailwind CSS · shadcn/ui ·
-Leaflet + React Leaflet (OpenStreetMap-family tiles only — no Google Maps,
-no paid Mapbox styles) · Supabase (Postgres + PostGIS) · Zod · date-fns ·
-TanStack Query · Recharts.
+Next.js (App Router) · TypeScript (strict) · Tailwind CSS · shadcn/ui (Base
+UI) · Leaflet + React Leaflet, with a MapLibre GL vector basemap bridged in
+via `@maplibre/maplibre-gl-leaflet` for label-language control (no Google
+Maps, no paid Mapbox styles) · Supabase (Postgres + PostGIS) · Zod ·
+date-fns · TanStack Query · Recharts.
 
 ### Map / GIS note
 
-The basemap uses OpenStreetMap-based free tile providers (OSM standard, HOT,
-CARTO Voyager/Dark Matter) — see `src/lib/map/config.ts`. No sovereignty or
-maritime-boundary geometry is fabricated by this codebase; if a boundary
-overlay is added later it must live in its own GeoJSON layer with a
-documented source, independent of the basemap and of AIS data. The default
-map view is centered on Vietnam/the East Sea (not China), and covers Hoang
-Sa and Truong Sa.
+Default basemap: **OpenFreeMap** (`tiles.openfreemap.org`, OpenMapTiles
+schema) — free, keyless vector tiles, rendered via MapLibre GL. Two plain
+OpenStreetMap raster layers (standard + Humanitarian) are also selectable
+from the basemap dropdown as keyless fallbacks. See `src/lib/map/config.ts`.
+
+CARTO's `basemaps.cartocdn.com` raster tiles were deliberately removed:
+they now return a `200 OK` PNG watermarked "API KEY REQUIRED" for
+unauthenticated requests instead of a clean error — worth remembering if
+re-evaluating tile providers later, since a plain reachability check won't
+catch it.
+
+**Label language:** the vector basemap's style is rewritten client-side
+(`src/lib/map/vietnamese-style.ts`, `preferVietnameseLabels()`) so every
+label prefers the `name:vi` OSM tag over the generic `name` tag, falling
+back to `name:en`. This does not rewrite or invent any place name — it only
+selects a different *existing* tag already present on the same feature when
+one is present in the open dataset. Where a feature (e.g. a reef in the
+East Sea) has no `name:vi` tag upstream in OSM, its original label is what
+still shows; that's a gap in third-party OSM tagging this app has no
+authority to fabricate data over.
+
+No sovereignty or maritime-boundary geometry is fabricated by this
+codebase; if a boundary overlay is added later it must live in its own
+GeoJSON layer with a documented source, independent of the basemap and of
+AIS data. The default map view is centered on Vietnam/the East Sea (not
+China), and covers Hoang Sa and Truong Sa.
 
 ## 5. Folder Structure
 
@@ -162,16 +196,32 @@ npm run db:build-schema
 Seed files live in `supabase/seed/`, run **after** the schema:
 
 1. `supabase/seed/01_ports.sql` — 8 major Vietnamese ports.
-2. `supabase/seed/02_vessels_and_ais.sql` — ~320 vessels with realistic
-   coastal/international trajectories, voyages, a handful of demo
-   predictions and anomalies. Generated by a seeded (deterministic) RNG —
-   regenerate with:
+2. `supabase/seed/02_vessels_and_ais.sql` — 1,000 vessels, each with several
+   chained voyage legs (not just one trip) giving ~300k AIS positions and
+   ~4,300 voyages total, plus demo predictions, anomalies, and 5 fleets.
+   Generated by a seeded (deterministic) RNG — regenerate with:
    ```bash
    npm run db:generate-seed
    ```
+   This file is large (~50MB). The Supabase SQL Editor can choke pasting
+   something that size — if it does, run it via `psql`/a Postgres client
+   against your project's connection string instead:
+   ```bash
+   psql "postgresql://postgres.<project-ref>:<password>@<pooler-host>:5432/postgres" \
+     -f supabase/seed/02_vessels_and_ais.sql
+   ```
+   (Use the **Session pooler** connection string from the dashboard's
+   "Connect" button — the direct connection is IPv6-only.)
 
-Paste each file into the SQL Editor and run it (in order — ports before
-vessels, since AIS destinations reference port names).
+Re-running the seed script adds another batch of vessels rather than
+replacing the old ones. To start clean first:
+```sql
+truncate public.fleets, public.vessels restart identity cascade;
+```
+(`ports` is static reference data and isn't touched by this.)
+
+Paste/run each file in order — ports before vessels, since AIS destinations
+reference port names.
 
 The anon key used by the app is read-only (§13), so seeding is a deliberate
 SQL Editor step rather than something the running app does.

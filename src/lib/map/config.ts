@@ -34,19 +34,30 @@ export type TileLayerConfig = RasterTileLayerConfig | VectorTileLayerConfig;
 // they now silently return a 200 OK PNG watermarked "API KEY REQUIRED" for
 // unauthenticated requests instead of erroring — not actually free
 // anymore, despite looking reachable from a plain HTTP check.
-export const TILE_LAYERS: TileLayerConfig[] = [
-  {
-    id: "vn-vector",
-    name: "Vector (Vietnamese labels)",
+// OpenFreeMap (tiles.openfreemap.org): a free, keyless, community-run
+// vector tile host serving OpenMapTiles-schema data with several style
+// variants — chosen over a single plain raster basemap because (a) vector
+// styles can be told which name tag to prefer per label, see
+// preferVietnameseLabels() in ./vietnamese-style.ts, and (b) offering
+// several contrast/color options in one dropdown, rather than only one
+// pale style, addresses "this basemap is hard to read" directly.
+function openFreeMapLayer(id: string, name: string, style: string): VectorTileLayerConfig {
+  return {
+    id,
+    name,
     type: "vector",
-    // OpenFreeMap: a free, keyless, community-run vector tile host serving
-    // OpenMapTiles-schema data. Chosen over a plain raster basemap because
-    // vector styles can be told which name tag to prefer per label — see
-    // preferVietnameseLabels() in ./vietnamese-style.ts.
-    styleUrl: "https://tiles.openfreemap.org/styles/liberty",
+    styleUrl: `https://tiles.openfreemap.org/styles/${style}`,
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://openfreemap.org">OpenFreeMap</a>',
-  },
+  };
+}
+
+export const TILE_LAYERS: TileLayerConfig[] = [
+  openFreeMapLayer("vn-bright", "Bright (Vietnamese labels)", "bright"),
+  openFreeMapLayer("vn-liberty", "Liberty (Vietnamese labels)", "liberty"),
+  openFreeMapLayer("vn-fiord", "Fiord — blue (Vietnamese labels)", "fiord"),
+  openFreeMapLayer("vn-dark", "Dark (Vietnamese labels)", "dark"),
+  openFreeMapLayer("vn-positron", "Positron — pale (Vietnamese labels)", "positron"),
   {
     id: "osm-standard",
     name: "OpenStreetMap (raster)",
@@ -58,7 +69,7 @@ export const TILE_LAYERS: TileLayerConfig[] = [
   },
   {
     id: "osm-humanitarian",
-    name: "Humanitarian (HOT)",
+    name: "Humanitarian (HOT, raster)",
     type: "raster",
     url: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
     attribution:
@@ -67,7 +78,10 @@ export const TILE_LAYERS: TileLayerConfig[] = [
   },
 ];
 
-export const DEFAULT_TILE_LAYER_ID = "vn-vector";
+// "Bright" over "Liberty"/"Positron": noticeably more color contrast
+// between land/water/roads at a glance, which was the whole point of
+// offering more options — "the plain white one is hard to read".
+export const DEFAULT_TILE_LAYER_ID = "vn-bright";
 
 // Centered on the East Sea / South China Sea off central Vietnam so the
 // mainland coastline, Hoang Sa, and Truong Sa are all visible by default.
