@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getDatasetNow } from "./demo-clock";
 import { mapFleet, mapVesselWithLatestPosition } from "@/lib/supabase/mappers";
 import type {
   FleetRow,
@@ -45,12 +46,17 @@ export async function getFleetById(id: string): Promise<Fleet | null> {
 
 export async function getFleetVessels(fleetId: string): Promise<VesselWithLatestPosition[]> {
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from("fleet_vessels_with_latest_position")
-    .select("*")
-    .eq("fleet_id", fleetId)
-    .limit(2000);
+  const [{ data, error }, datasetNow] = await Promise.all([
+    supabase
+      .from("fleet_vessels_with_latest_position")
+      .select("*")
+      .eq("fleet_id", fleetId)
+      .limit(2000),
+    getDatasetNow(),
+  ]);
 
   if (error) throw new Error(`Failed to load fleet vessels: ${error.message}`);
-  return ((data ?? []) as VesselWithLatestPositionRow[]).map(mapVesselWithLatestPosition);
+  return ((data ?? []) as VesselWithLatestPositionRow[]).map((row) =>
+    mapVesselWithLatestPosition(row, datasetNow)
+  );
 }

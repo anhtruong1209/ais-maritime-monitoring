@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MapCanvas } from "@/components/map/MapCanvas";
 import { MapControlsPanel, type MapFilterState } from "@/components/map/MapControlsPanel";
+import { FleetStatusOverview } from "@/components/map/FleetStatusOverview";
 import { MapLegend } from "@/components/map/MapLegend";
 import { useAllVesselsForMap } from "@/hooks/use-vessels";
 import { usePorts } from "@/hooks/use-ports";
@@ -136,27 +137,28 @@ export default function MapPage() {
         cluster
       />
 
-      <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-3">
-        <div className="pointer-events-auto">
-          {isLoading && (
-            <div className="h-fit rounded-md border border-border bg-card/95 px-3 py-1.5 text-xs text-muted-foreground shadow-lg backdrop-blur">
-              {t("Loading fleet…")}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Both `fixed` to the viewport (not part of the absolute-inset-0
-          overlay above), matching VesselDetailSheet's own positioning —
-          deliberately independent of the map container's own box so
-          neither can end up affected by Leaflet's layout/zoom
+      {/* All `fixed` to the viewport rather than positioned relative to the
+          map container, matching VesselDetailSheet's own positioning —
+          deliberately independent of the map container's own box so none
+          of these can end up affected by Leaflet's layout/zoom
           recalculations. The legend sits bottom-RIGHT rather than
           bottom-left specifically because the detail panel is docked
           left and would otherwise cover it whenever it's open. z-index is
           ABOVE the detail sheet's (z-[2000]): on a narrower viewport the
-          sheet's width plus this panel's width can exceed the screen
-          width, and when that overlap happens the sheet must not be the
-          one left on top — that made the panel's selects unclickable. */}
+          sheet's width plus a panel's width can exceed the screen width,
+          and when that overlap happens the sheet must not be the one
+          left on top — that made the panel's selects unclickable. */}
+      <div className="pointer-events-none fixed top-[4.25rem] left-3 z-[2100]">
+        <div className="pointer-events-auto">
+          {isLoading ? (
+            <div className="h-fit rounded-md border border-border bg-card/95 px-3 py-1.5 text-xs text-muted-foreground shadow-lg backdrop-blur">
+              {t("Loading fleet…")}
+            </div>
+          ) : (
+            <FleetStatusOverview vessels={vessels} />
+          )}
+        </div>
+      </div>
       <div className="pointer-events-none fixed top-[4.25rem] right-3 z-[2100]">
         <div className="pointer-events-auto">
           <MapControlsPanel

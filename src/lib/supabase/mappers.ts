@@ -43,7 +43,8 @@ export function mapVessel(row: VesselRow): Vessel {
 }
 
 export function mapVesselWithLatestPosition(
-  row: VesselWithLatestPositionRow
+  row: VesselWithLatestPositionRow,
+  now: Date = new Date()
 ): VesselWithLatestPosition {
   const latestPosition = row.latest_timestamp
     ? {
@@ -61,7 +62,7 @@ export function mapVesselWithLatestPosition(
   return {
     ...mapVessel(row),
     latestPosition,
-    status: deriveVesselStatus(latestPosition),
+    status: deriveVesselStatus(latestPosition, now),
   };
 }
 

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getDatasetNow } from "./demo-clock";
 import {
   mapAISPosition,
   mapVessel,
@@ -45,11 +46,14 @@ export async function getVessels(
   // Status is derived (not stored), so it can't be pushed down to SQL.
   // The dataset is small (hundreds of rows) so filtering + pagination
   // happens in-memory here rather than adding a generated status column.
-  const { data, error, count } = await builder.order("name", { ascending: true });
+  const [{ data, error, count }, datasetNow] = await Promise.all([
+    builder.order("name", { ascending: true }),
+    getDatasetNow(),
+  ]);
   if (error) throw new Error(`Failed to load vessels: ${error.message}`);
 
-  let vessels = ((data ?? []) as VesselWithLatestPositionRow[]).map(
-    mapVesselWithLatestPosition
+  let vessels = ((data ?? []) as VesselWithLatestPositionRow[]).map((row) =>
+    mapVesselWithLatestPosition(row, datasetNow)
   );
 
   if (query.status) {
@@ -80,7 +84,8 @@ export async function getVesselPositions(
   hours: number
 ): Promise<AISPosition[]> {
   const supabase = await createServerSupabaseClient();
-  const since = new Date(Date.now() - hours * 3_600_000).toISOString();
+  const datasetNow = await getDatasetNow();
+  const since = new Date(datasetNow.getTime() - hours * 3_600_000).toISOString();
 
   const { data, error } = await supabase
     .from("ais_positions")
@@ -115,13 +120,13 @@ export async function getAllVesselsWithLatestPosition(): Promise<
   VesselWithLatestPosition[]
 > {
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from("vessels_with_latest_position")
-    .select("*")
-    .limit(2000);
+  const [{ data, error }, datasetNow] = await Promise.all([
+    supabase.from("vessels_with_latest_position").select("*").limit(2000),
+    getDatasetNow(),
+  ]);
 
   if (error) throw new Error(`Failed to load vessels: ${error.message}`);
-  return ((data ?? []) as VesselWithLatestPositionRow[]).map(
-    mapVesselWithLatestPosition
+  return ((data ?? []) as VesselWithLatestPositionRow[]).map((row) =>
+    mapVesselWithLatestPosition(row, datasetNow)
   );
 }

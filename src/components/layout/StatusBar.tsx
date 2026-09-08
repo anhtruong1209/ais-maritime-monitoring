@@ -3,6 +3,14 @@
 import { useEffect, useState } from "react";
 import { useLocale } from "@/providers/locale-provider";
 
+const VN_TIME_FORMAT = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Asia/Ho_Chi_Minh",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+});
+
 export function StatusBar() {
   // Starts null so the server-rendered markup has no clock value, then
   // picks up the real time on mount — avoids a hydration mismatch.
@@ -22,7 +30,12 @@ export function StatusBar() {
       </div>
       <div className="flex items-center gap-4">
         <span>{t("Region: Vietnam / East Sea")}</span>
-        <span suppressHydrationWarning>{now ? now.toUTCString().slice(17, 25) + " UTC" : "—"}</span>
+        <span suppressHydrationWarning>
+          {now ? `${VN_TIME_FORMAT.format(now)} VN` : "—"}
+        </span>
+        <span suppressHydrationWarning>
+          {now ? now.toUTCString().slice(17, 25) + " UTC" : "—"}
+        </span>
       </div>
     </footer>
   );

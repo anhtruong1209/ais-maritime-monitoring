@@ -100,6 +100,8 @@ export const VI_DICTIONARY: Record<string, string> = {
   "Anomaly alerts": "Cảnh báo bất thường",
   "Vessel Type": "Loại tàu",
   "No signal": "Mất tín hiệu",
+  Fleet: "Đội tàu",
+  Online: "Đang hoạt động",
   Road: "Đường",
   Satellite: "Vệ tinh",
   Terrain: "Địa hình",
