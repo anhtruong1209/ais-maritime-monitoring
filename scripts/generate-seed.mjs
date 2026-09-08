@@ -603,6 +603,13 @@ for (let i = 0; i < TOTAL_VESSELS; i++) {
 
   const departureTime = fixes[0].timestamp;
   const lastFix = fixes[fixes.length - 1];
+  // Recorded for the collision-risk pass below, which needs every vessel's
+  // final position/course after the whole fleet has been generated.
+  vessel.lastLat = lastFix.lat;
+  vessel.lastLon = lastFix.lon;
+  vessel.lastCog = lastFix.cog;
+  vessel.lastTimestamp = lastFix.timestamp;
+  vessel.isMoving = lastFix.sog >= 0.5; // mirrors STATIONARY_SOG_KNOTS in src/lib/constants.ts
   const totalKm = routeTotalDistanceKm(waypoints);
   const remainingKm = totalKm * (1 - progressEnd);
   const etaMs = new Date(lastFix.timestamp).getTime() + (remainingKm / ((cruiseSpeedKn * 1.852) || 1)) * 3_600_000;

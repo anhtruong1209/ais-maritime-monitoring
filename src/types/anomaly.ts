@@ -3,7 +3,8 @@ export type AnomalyType =
   | "abnormal_speed"
   | "sudden_course_change"
   | "ais_signal_gap"
-  | "long_stationary";
+  | "long_stationary"
+  | "collision_risk";
 
 export type AnomalySeverity = "low" | "medium" | "high" | "critical";
 

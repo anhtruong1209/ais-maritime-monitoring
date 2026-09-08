@@ -80,6 +80,7 @@ export const VI_DICTIONARY: Record<string, string> = {
   "Sudden Course Change": "Đổi hướng đột ngột",
   "AIS Signal Gap": "Mất tín hiệu AIS",
   "Long Stationary Period": "Đứng yên kéo dài",
+  "Collision Risk": "Nguy cơ va chạm",
 
   // Anomaly / severity status (rendered lowercase with a CSS `capitalize`,
   // so keys are lowercase here too)

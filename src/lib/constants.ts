@@ -17,12 +17,20 @@ export const VESSEL_STATUSES: VesselStatus[] = [
   "offline",
 ];
 
+export const VESSEL_STATUS_LABELS: Record<VesselStatus, string> = {
+  moving: "Moving",
+  anchored: "Anchored",
+  stopped: "Stopped",
+  offline: "Offline",
+};
+
 export const ANOMALY_TYPES: AnomalyType[] = [
   "route_deviation",
   "abnormal_speed",
   "sudden_course_change",
   "ais_signal_gap",
   "long_stationary",
+  "collision_risk",
 ];
 
 export const ANOMALY_TYPE_LABELS: Record<AnomalyType, string> = {
@@ -31,6 +39,7 @@ export const ANOMALY_TYPE_LABELS: Record<AnomalyType, string> = {
   sudden_course_change: "Sudden Course Change",
   ais_signal_gap: "AIS Signal Gap",
   long_stationary: "Long Stationary Period",
+  collision_risk: "Collision Risk",
 };
 
 export const ANOMALY_SEVERITY_ORDER: AnomalySeverity[] = [
