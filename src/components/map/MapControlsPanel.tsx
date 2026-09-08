@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { SHIP_TYPES, VESSEL_STATUSES } from "@/lib/constants";
+import { SHIP_TYPES, VESSEL_STATUS_LABELS, VESSEL_STATUSES } from "@/lib/constants";
 import { TILE_LAYERS } from "@/lib/map/config";
 import { SHIP_TYPE_LABELS } from "@/lib/map/ship-type-meta";
 import { cn } from "@/lib/utils";
@@ -204,9 +204,9 @@ export function MapControlsPanel({
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="space-y-2">
         <Select value={filters.shipType} onValueChange={(v) => onChange({ shipType: v ?? ALL })}>
-          <SelectTrigger className="h-10">
+          <SelectTrigger className="h-10 w-full">
             <SelectValue placeholder={t("Type")}>
               {(v: string) => (v === ALL ? t("All types") : t(SHIP_TYPE_LABELS[v as keyof typeof SHIP_TYPE_LABELS]))}
             </SelectValue>
@@ -222,16 +222,16 @@ export function MapControlsPanel({
         </Select>
 
         <Select value={filters.status} onValueChange={(v) => onChange({ status: v ?? ALL })}>
-          <SelectTrigger className="h-10">
+          <SelectTrigger className="h-10 w-full">
             <SelectValue placeholder={t("Status")}>
-              {(v: string) => (v === ALL ? t("All statuses") : t(v))}
+              {(v: string) => (v === ALL ? t("All statuses") : t(VESSEL_STATUS_LABELS[v as keyof typeof VESSEL_STATUS_LABELS]))}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>{t("All statuses")}</SelectItem>
             {VESSEL_STATUSES.map((status) => (
-              <SelectItem key={status} value={status} className="capitalize">
-                {t(status)}
+              <SelectItem key={status} value={status}>
+                {t(VESSEL_STATUS_LABELS[status])}
               </SelectItem>
             ))}
           </SelectContent>

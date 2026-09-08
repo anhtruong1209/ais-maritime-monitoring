@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SHIP_TYPES, VESSEL_STATUSES } from "@/lib/constants";
+import { SHIP_TYPES, VESSEL_STATUS_LABELS, VESSEL_STATUSES } from "@/lib/constants";
 import { SHIP_TYPE_LABELS } from "@/lib/map/ship-type-meta";
 import { useLocale } from "@/providers/locale-provider";
 
@@ -72,14 +72,14 @@ export function VesselFilters() {
       >
         <SelectTrigger className="h-9 w-36">
           <SelectValue placeholder={t("Status")}>
-            {(v: string) => (v === ALL ? t("All statuses") : t(v))}
+            {(v: string) => (v === ALL ? t("All statuses") : t(VESSEL_STATUS_LABELS[v as keyof typeof VESSEL_STATUS_LABELS]))}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value={ALL}>{t("All statuses")}</SelectItem>
           {VESSEL_STATUSES.map((status) => (
-            <SelectItem key={status} value={status} className="capitalize">
-              {t(status)}
+            <SelectItem key={status} value={status}>
+              {t(VESSEL_STATUS_LABELS[status])}
             </SelectItem>
           ))}
         </SelectContent>

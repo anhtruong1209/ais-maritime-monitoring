@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
+import { VESSEL_STATUS_LABELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/providers/locale-provider";
 import type { VesselStatus } from "@/types";
@@ -12,18 +13,11 @@ const STATUS_STYLES: Record<VesselStatus, string> = {
   offline: "bg-slate-500/15 text-slate-400 border-slate-500/30",
 };
 
-const STATUS_LABELS: Record<VesselStatus, string> = {
-  moving: "Moving",
-  anchored: "Anchored",
-  stopped: "Stopped",
-  offline: "Offline",
-};
-
 export function VesselStatusBadge({ status }: { status: VesselStatus }) {
   const { t } = useLocale();
   return (
     <Badge variant="outline" className={cn("font-normal", STATUS_STYLES[status])}>
-      {t(STATUS_LABELS[status])}
+      {t(VESSEL_STATUS_LABELS[status])}
     </Badge>
   );
 }

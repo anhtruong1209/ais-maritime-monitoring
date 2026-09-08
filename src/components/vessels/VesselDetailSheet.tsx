@@ -24,6 +24,11 @@ export function VesselDetailSheet() {
       open={Boolean(selectedMmsi)}
       onOpenChange={(open) => !open && closeVessel()}
       modal={false}
+      // Base UI dismisses non-modal dialogs on outside presses by default —
+      // without this, clicking/panning the map (which is "outside" this
+      // panel) closed it on every interaction. It should only close via its
+      // own Close button.
+      disablePointerDismissal
     >
       <DialogPrimitive.Portal>
         <DialogPrimitive.Popup

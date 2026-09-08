@@ -59,10 +59,10 @@ export const STATIONARY_SOG_KNOTS = 0.5;
 export const DEFAULT_PAGE_SIZE = 25;
 
 export const TRAJECTORY_WINDOW_OPTIONS = [
-  { label: "Last 1 hour", hours: 1 },
-  { label: "Last 3 hours", hours: 3 },
-  { label: "Last 6 hours", hours: 6 },
-  { label: "Last 9 hours", hours: 9 },
-  { label: "Last 12 hours", hours: 12 },
-  { label: "Last 24 hours", hours: 24 },
+  { label: "1h", hours: 1 },
+  { label: "3h", hours: 3 },
+  { label: "6h", hours: 6 },
+  { label: "9h", hours: 9 },
+  { label: "12h", hours: 12 },
+  { label: "24h", hours: 24 },
 ] as const;

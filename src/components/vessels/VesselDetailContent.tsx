@@ -68,8 +68,6 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
           <VesselInfoCard vessel={vessel} />
         </div>
 
-        <VesselVoyagesCard voyages={voyages ?? []} />
-
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium">{t("Position History")}</CardTitle>
@@ -78,6 +76,8 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
             <VesselHistoryPanel mmsi={mmsi} />
           </CardContent>
         </Card>
+
+        <VesselVoyagesCard voyages={voyages ?? []} />
 
         {predictionsLoading && <Skeleton className="h-56 w-full" />}
         {!predictionsLoading && !predictions && (
