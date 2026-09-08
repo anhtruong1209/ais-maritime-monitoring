@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.join(__dirname),
   },
+  // Hides the floating dev-mode indicator badge (route/build-activity
+  // icon) — it's a `next dev` overlay, not part of the app, and was
+  // getting mistaken for a stray UI element on top of the map.
+  devIndicators: false,
 };
 
 export default nextConfig;
