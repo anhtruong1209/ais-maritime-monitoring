@@ -171,7 +171,10 @@ export function MaritimeMapInner({
   resetSignal,
 }: MaritimeMapProps) {
   const tileLayer = TILE_LAYERS.find((t) => t.id === tileLayerId) ?? TILE_LAYERS[0];
-  const selected = vessels.find((v) => v.id === selectedVesselId);
+  const selected = useMemo(
+    () => vessels.find((v) => v.id === selectedVesselId),
+    [vessels, selectedVesselId]
+  );
   const selectedLat = selected?.latestPosition?.latitude ?? null;
   const selectedLng = selected?.latestPosition?.longitude ?? null;
   // Memoized on the actual coordinates (not a fresh `[lat, lng]` literal
@@ -246,6 +249,11 @@ export function MaritimeMapInner({
       // one the marker-cluster plugin throws "Map has no maxZoom specified".
       maxZoom={19}
       scrollWheelZoom
+      // Vector layers (trajectory/predicted-route lines, the selection
+      // ring, per-point confidence dots) render to one shared canvas
+      // instead of one SVG DOM element each — noticeably cheaper to pan/
+      // zoom once a route has more than a handful of points.
+      preferCanvas
       className={className ?? "h-full w-full"}
     >
       {tileLayer.type === "vector" ? (

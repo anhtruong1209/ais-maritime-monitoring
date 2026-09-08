@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,12 @@ import type { VesselWithLatestPosition } from "@/types";
 
 const ALL = "all";
 const MAX_SUGGESTIONS = 8;
+// Every keystroke otherwise re-fetched the whole (up to 1500-row) vessel
+// list from the server and rebuilt the entire marker/cluster tree — very
+// noticeably janky while typing. Suggestions stay instant (computed
+// client-side from what's already loaded); only the server-driving
+// filter waits for a short pause in typing.
+const SEARCH_DEBOUNCE_MS = 300;
 
 export interface MapFilterState {
   search: string;
@@ -63,19 +69,44 @@ function VesselSearchBox({
 }) {
   const [focused, setFocused] = useState(false);
   const blurTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Local, instant-feedback value the input actually displays; `search`
+  // (the prop) only catches up after the debounce delay. Re-synced
+  // whenever `search` changes from outside (Reset view, a suggestion
+  // pick, clearing the selected-vessel chip) — adjusted during render
+  // (React's recommended pattern for this) rather than in an effect, so
+  // it takes effect in the same commit instead of one render later.
+  const [localValue, setLocalValue] = useState(search);
+  const [syncedSearch, setSyncedSearch] = useState(search);
+  if (search !== syncedSearch) {
+    setSyncedSearch(search);
+    setLocalValue(search);
+  }
+  useEffect(() => () => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+  }, []);
 
   const suggestions = useMemo(() => {
-    const query = search.trim().toLowerCase();
+    const query = localValue.trim().toLowerCase();
     if (!query) return [];
     return vessels
       .filter((v) => v.name.toLowerCase().includes(query) || v.mmsi.includes(query))
       .slice(0, MAX_SUGGESTIONS);
-  }, [search, vessels]);
+  }, [localValue, vessels]);
 
   const showDropdown = focused && suggestions.length > 0;
 
+  function handleInputChange(value: string) {
+    setLocalValue(value);
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => onSearchChange(value), SEARCH_DEBOUNCE_MS);
+  }
+
   function handleSelect(vessel: VesselWithLatestPosition) {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     onSelectVessel?.(vessel);
+    setLocalValue(vessel.name);
     onSearchChange(vessel.name);
     setFocused(false);
   }
@@ -84,8 +115,8 @@ function VesselSearchBox({
     <div className={cn("relative", className)}>
       <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
       <Input
-        value={search}
-        onChange={(e) => onSearchChange(e.target.value)}
+        value={localValue}
+        onChange={(e) => handleInputChange(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => {
           // Delay so a click on a suggestion registers before the list unmounts.

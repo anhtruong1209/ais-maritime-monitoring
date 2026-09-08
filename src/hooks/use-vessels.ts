@@ -43,6 +43,12 @@ export function useAllVesselsForMap(filters: Omit<VesselFilters, "page" | "pageS
     queryKey: ["vessels", "map", filters],
     queryFn: () =>
       fetchJson<VesselsResponse>(`/api/vessels?${buildQuery({ ...filters, pageSize: 1500 })}`),
-    refetchInterval: 60_000,
+    // This demo's positions are static between refetches (nothing actually
+    // moves on its own), so refetching every 60s was pure cost: a full
+    // network round-trip plus a full marker/cluster rebuild for a result
+    // that's byte-for-byte identical, often hitching mid-interaction.
+    // Long enough to still look "live" if this is ever pointed at a real
+    // backend, rare enough not to matter for smoothness in the meantime.
+    refetchInterval: 5 * 60_000,
   });
 }

@@ -7,7 +7,7 @@ import { OFFLINE_VESSEL_COLOR, SHIP_TYPE_COLORS, SHIP_TYPE_LABELS } from "@/lib/
 import { useLocale } from "@/providers/locale-provider";
 import type { ShipType } from "@/types";
 
-const ORDER: ShipType[] = ["cargo", "tanker", "passenger", "fishing", "tug", "military", "other"];
+const ORDER: ShipType[] = ["cargo", "tanker", "passenger", "fishing", "tug", "other"];
 
 /** Collapsed to a small icon button by default — same pattern as
  * MapControlsPanel — so it doesn't permanently occupy map space when
@@ -31,8 +31,8 @@ export function MapLegend() {
   }
 
   return (
-    <div className="rounded-md border border-border bg-card/95 p-3 text-sm shadow-lg backdrop-blur">
-      <div className="mb-2 flex items-center justify-between gap-4">
+    <div className="rounded-lg border border-border bg-card/95 p-4 text-sm shadow-lg backdrop-blur">
+      <div className="mb-3 flex items-center justify-between gap-4">
         <p className="font-semibold text-muted-foreground">{t("Vessel Type")}</p>
         <Button
           variant="ghost"
@@ -44,9 +44,12 @@ export function MapLegend() {
           <X className="size-3.5" />
         </Button>
       </div>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+      <div className="grid grid-cols-2 gap-1">
         {ORDER.map((type) => (
-          <div key={type} className="flex items-center gap-2">
+          <div
+            key={type}
+            className="flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/60"
+          >
             <span
               className="size-2.5 shrink-0 rounded-full"
               style={{ backgroundColor: SHIP_TYPE_COLORS[type] }}
@@ -54,7 +57,7 @@ export function MapLegend() {
             {t(SHIP_TYPE_LABELS[type])}
           </div>
         ))}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/60">
           <span
             className="size-2.5 shrink-0 rounded-full"
             style={{ backgroundColor: OFFLINE_VESSEL_COLOR }}
