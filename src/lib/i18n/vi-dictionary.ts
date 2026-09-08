@@ -98,6 +98,12 @@ export const VI_DICTIONARY: Record<string, string> = {
   "Predicted trajectory": "Hành trình dự đoán",
   "Anomaly alerts": "Cảnh báo bất thường",
   "Vessel Type": "Loại tàu",
+  "No signal": "Mất tín hiệu",
+  Road: "Đường",
+  Satellite: "Vệ tinh",
+  Terrain: "Địa hình",
+  "Humanitarian (HOT)": "Nhân đạo (HOT)",
+  "Position History": "Lịch sử vị trí",
   "Loading fleet…": "Đang tải đội tàu…",
 
   // Vessel detail panel

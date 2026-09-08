@@ -241,13 +241,13 @@ export function MapControlsPanel({
       <Select value={filters.tileLayerId} onValueChange={(v) => v && onChange({ tileLayerId: v })}>
         <SelectTrigger className="h-10 w-full">
           <SelectValue placeholder={t("Basemap")}>
-            {(v: string) => TILE_LAYERS.find((l) => l.id === v)?.name ?? v}
+            {(v: string) => t(TILE_LAYERS.find((l) => l.id === v)?.name ?? v)}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {TILE_LAYERS.map((layer) => (
             <SelectItem key={layer.id} value={layer.id}>
-              {layer.name}
+              {t(layer.name)}
             </SelectItem>
           ))}
         </SelectContent>

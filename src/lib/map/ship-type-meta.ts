@@ -15,6 +15,12 @@ export const SHIP_TYPE_COLORS: Record<ShipType, string> = {
   other: "#94a3b8", // muted slate
 };
 
+// Vessels with no recent AIS fix (see deriveVesselStatus/OFFLINE_THRESHOLD_MINUTES)
+// render in this neutral gray on the map regardless of ship type, so "no
+// data" is visually obvious at a glance instead of looking like any other
+// vessel with just a dimmer version of its type color.
+export const OFFLINE_VESSEL_COLOR = "#9ca3af";
+
 export const SHIP_TYPE_LABELS: Record<ShipType, string> = {
   cargo: "Cargo",
   tanker: "Tanker",

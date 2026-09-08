@@ -1,11 +1,14 @@
 import L from "leaflet";
-import { SHIP_TYPE_COLORS } from "./ship-type-meta";
+import { OFFLINE_VESSEL_COLOR, SHIP_TYPE_COLORS } from "./ship-type-meta";
 import type { ShipType } from "@/types";
 
 interface VesselIconOptions {
   shipType: ShipType;
   cog: number;
   moving?: boolean;
+  /** No recent AIS fix — renders gray regardless of ship type instead of
+   * just a dimmer version of its usual color. */
+  offline?: boolean;
   /** Has an open (unresolved) anomaly — draws a warning ring around the icon. */
   flagged?: boolean;
 }
@@ -20,8 +23,8 @@ interface VesselIconOptions {
 // state is a separate ring drawn by SelectionRing in MaritimeMapInner, not
 // part of this icon — that keeps the icon (and the marker array it lives
 // in) stable across selection changes; see that component's comment.
-function vesselSvg({ shipType, cog, moving, flagged }: VesselIconOptions) {
-  const color = SHIP_TYPE_COLORS[shipType];
+function vesselSvg({ shipType, cog, moving, offline, flagged }: VesselIconOptions) {
+  const color = offline ? OFFLINE_VESSEL_COLOR : SHIP_TYPE_COLORS[shipType];
   const strokeWidth = 1.75;
   const opacity = moving ? 1 : 0.75;
 

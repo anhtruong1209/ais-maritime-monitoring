@@ -1,6 +1,6 @@
 "use client";
 
-import { SHIP_TYPE_COLORS, SHIP_TYPE_LABELS } from "@/lib/map/ship-type-meta";
+import { OFFLINE_VESSEL_COLOR, SHIP_TYPE_COLORS, SHIP_TYPE_LABELS } from "@/lib/map/ship-type-meta";
 import { useLocale } from "@/providers/locale-provider";
 import type { ShipType } from "@/types";
 
@@ -22,6 +22,13 @@ export function MapLegend() {
             {t(SHIP_TYPE_LABELS[type])}
           </div>
         ))}
+        <div className="flex items-center gap-2">
+          <span
+            className="size-2.5 shrink-0 rounded-full"
+            style={{ backgroundColor: OFFLINE_VESSEL_COLOR }}
+          />
+          {t("No signal")}
+        </div>
       </div>
     </div>
   );

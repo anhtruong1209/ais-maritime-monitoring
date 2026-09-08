@@ -2,9 +2,9 @@
 
 import { RecentAisMessagesTable } from "./RecentAisMessagesTable";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVesselPositions } from "@/hooks/use-vessel-positions";
 import { TRAJECTORY_WINDOW_OPTIONS } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 import { useLocale } from "@/providers/locale-provider";
 import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
 
@@ -13,6 +13,8 @@ import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
  * purpose. `historyHours` is shared (via VesselDetailProvider) rather than
  * local state, so picking a window here also drives the trajectory drawn
  * on the actual map on /map, instead of needing a second map in this panel.
+ * Plain option buttons, not a second row of tabs — this is a value picker,
+ * not navigation.
  */
 export function VesselHistoryPanel({ mmsi }: { mmsi: string }) {
   const { historyHours, setHistoryHours } = useVesselDetailDialog();
@@ -21,15 +23,26 @@ export function VesselHistoryPanel({ mmsi }: { mmsi: string }) {
 
   return (
     <div className="space-y-3">
-      <Tabs value={String(historyHours)} onValueChange={(v) => setHistoryHours(Number(v), mmsi)}>
-        <TabsList>
-          {TRAJECTORY_WINDOW_OPTIONS.map((opt) => (
-            <TabsTrigger key={opt.hours} value={String(opt.hours)}>
+      <div className="flex flex-wrap gap-1.5">
+        {TRAJECTORY_WINDOW_OPTIONS.map((opt) => {
+          const active = historyHours === opt.hours;
+          return (
+            <button
+              key={opt.hours}
+              type="button"
+              onClick={() => setHistoryHours(opt.hours, mmsi)}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                active
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-background text-muted-foreground hover:bg-secondary"
+              )}
+            >
               {t(opt.label)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
+            </button>
+          );
+        })}
+      </div>
 
       {isLoading ? (
         <Skeleton className="h-64 w-full" />

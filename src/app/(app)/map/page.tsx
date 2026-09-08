@@ -129,16 +129,15 @@ export default function MapPage() {
             </div>
           )}
         </div>
-        <div className="pointer-events-auto self-start">
-          <MapLegend />
-        </div>
       </div>
 
-      {/* `fixed` (not part of the absolute-inset-0 overlay above) and
-          pinned to the viewport, matching VesselDetailSheet's own
-          positioning — this is deliberately independent of the map
-          container's own box so it can never end up affected by Leaflet's
-          layout/zoom recalculations. */}
+      {/* Both `fixed` to the viewport (not part of the absolute-inset-0
+          overlay above), matching VesselDetailSheet's own positioning —
+          deliberately independent of the map container's own box so
+          neither can end up affected by Leaflet's layout/zoom
+          recalculations. The legend sits bottom-RIGHT rather than
+          bottom-left specifically because the detail panel is docked
+          left and would otherwise cover it whenever it's open. */}
       <div className="pointer-events-none fixed top-[4.25rem] right-3 z-[1500]">
         <div className="pointer-events-auto">
           <MapControlsPanel
@@ -153,6 +152,11 @@ export default function MapPage() {
             vessels={vessels}
             onSelectVessel={handleSelectVessel}
           />
+        </div>
+      </div>
+      <div className="pointer-events-none fixed right-3 bottom-11 z-[1500]">
+        <div className="pointer-events-auto">
+          <MapLegend />
         </div>
       </div>
     </div>

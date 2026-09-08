@@ -224,6 +224,7 @@ export function MaritimeMapInner({
               shipType: vessel.shipType,
               cog: pos.cog,
               moving: vessel.status === "moving",
+              offline: vessel.status === "offline",
               flagged: flaggedVesselIds.has(vessel.id),
             })}
             eventHandlers={{

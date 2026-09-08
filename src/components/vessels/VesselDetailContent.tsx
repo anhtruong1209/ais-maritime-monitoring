@@ -9,8 +9,8 @@ import { VesselVoyagesCard } from "./VesselVoyagesCard";
 import { VesselHistoryPanel } from "./VesselHistoryPanel";
 import { EtaCard } from "@/components/predictions/EtaCard";
 import { PredictionPanel } from "@/components/predictions/PredictionPanel";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useVessel } from "@/hooks/use-vessel";
 import { usePredictions } from "@/hooks/use-predictions";
 import { useVesselPositions } from "@/hooks/use-vessel-positions";
@@ -20,8 +20,9 @@ import { deriveVesselStatus } from "@/lib/vessel-status";
 
 /**
  * Everything about one vessel — current AIS, voyages, historical
- * trajectory, AI prediction, and static particulars — in a single tabbed
- * panel. This is the only place vessel detail lives: it's rendered inside
+ * trajectory, AI prediction, and static particulars — stacked in a single
+ * scrollable panel (no inner tabs: one thing, scroll to see the rest).
+ * This is the only place vessel detail lives: it's rendered inside
  * VesselDetailSheet (a side panel, opened over whatever page/map you were
  * already on) rather than as a separate route, so opening it never
  * unmounts the map or re-fetches the fleet.
@@ -61,47 +62,36 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
         <VesselStatusBadge status={deriveVesselStatus(latest)} />
       </div>
 
-      <Tabs defaultValue="current" className="min-h-0 flex-1">
-        <TabsList className="mx-4 mt-3">
-          <TabsTrigger value="current">{t("Current")}</TabsTrigger>
-          <TabsTrigger value="history">{t("History")}</TabsTrigger>
-          <TabsTrigger value="predictions">{t("Predictions")}</TabsTrigger>
-          <TabsTrigger value="particulars">{t("Particulars")}</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="current" className="overflow-y-auto p-4">
-          <div className="grid gap-4 xl:grid-cols-2">
-            <CurrentAisCard position={latest} />
-            <VesselInfoCard vessel={vessel} />
-          </div>
-          <div className="mt-4">
-            <VesselVoyagesCard voyages={voyages ?? []} />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="history" className="overflow-y-auto p-4">
-          <VesselHistoryPanel mmsi={mmsi} />
-        </TabsContent>
-
-        <TabsContent value="predictions" className="space-y-4 overflow-y-auto p-4">
-          {predictionsLoading && <Skeleton className="h-56 w-full" />}
-          {!predictionsLoading && !predictions && (
-            <p className="text-sm text-muted-foreground">
-              {t("No AIS data available to generate a prediction for this vessel.")}
-            </p>
-          )}
-          {predictions && (
-            <>
-              <PredictionPanel trajectory={predictions.trajectory} />
-              <EtaCard eta={predictions.eta} />
-            </>
-          )}
-        </TabsContent>
-
-        <TabsContent value="particulars" className="overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+        <div className="grid gap-4 xl:grid-cols-2">
+          <CurrentAisCard position={latest} />
           <VesselInfoCard vessel={vessel} />
-        </TabsContent>
-      </Tabs>
+        </div>
+
+        <VesselVoyagesCard voyages={voyages ?? []} />
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">{t("Position History")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <VesselHistoryPanel mmsi={mmsi} />
+          </CardContent>
+        </Card>
+
+        {predictionsLoading && <Skeleton className="h-56 w-full" />}
+        {!predictionsLoading && !predictions && (
+          <p className="text-sm text-muted-foreground">
+            {t("No AIS data available to generate a prediction for this vessel.")}
+          </p>
+        )}
+        {predictions && (
+          <>
+            <PredictionPanel trajectory={predictions.trajectory} />
+            <EtaCard eta={predictions.eta} />
+          </>
+        )}
+      </div>
     </div>
   );
 }

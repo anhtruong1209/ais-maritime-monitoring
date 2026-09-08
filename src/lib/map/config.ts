@@ -52,10 +52,13 @@ function openFreeMapLayer(id: string, name: string, style: string): VectorTileLa
   };
 }
 
+// Named the way a general audience expects from Google/Apple Maps-style
+// pickers (Road / Satellite / Terrain) rather than by provider name — most
+// users don't know or care that the road layer comes from OpenStreetMap.
 export const TILE_LAYERS: TileLayerConfig[] = [
   {
     id: "osm-standard",
-    name: "OpenStreetMap",
+    name: "Road",
     type: "raster",
     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     attribution:
@@ -63,17 +66,8 @@ export const TILE_LAYERS: TileLayerConfig[] = [
     maxZoom: 19,
   },
   {
-    id: "osm-humanitarian",
-    name: "Humanitarian (HOT)",
-    type: "raster",
-    url: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, tiles by HOT',
-    maxZoom: 19,
-  },
-  {
     id: "esri-satellite",
-    name: "Satellite (Esri)",
+    name: "Satellite",
     type: "raster",
     // Esri's public World Imagery service — free for general/non-commercial
     // use with no API key. Useful to visually confirm a vessel's reported
@@ -85,12 +79,21 @@ export const TILE_LAYERS: TileLayerConfig[] = [
   },
   {
     id: "opentopomap",
-    name: "Terrain (OpenTopoMap)",
+    name: "Terrain",
     type: "raster",
     url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
     attribution:
       '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (CC-BY-SA)',
     maxZoom: 17,
+  },
+  {
+    id: "osm-humanitarian",
+    name: "Humanitarian (HOT)",
+    type: "raster",
+    url: "https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, tiles by HOT',
+    maxZoom: 19,
   },
   // Experimental: vector basemaps with Vietnamese-preferred labels (see
   // preferVietnameseLabels() in ./vietnamese-style.ts). Currently rendering
