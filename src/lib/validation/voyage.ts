@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { VOYAGE_STATUSES } from "@/lib/constants";
 
 export const voyageListQuerySchema = z.object({
   destinationPort: z.string().trim().max(100).optional(),
-  status: z.enum(["scheduled", "in_progress", "completed", "cancelled"]).optional(),
+  status: z.enum(VOYAGE_STATUSES).optional(),
   departureDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)

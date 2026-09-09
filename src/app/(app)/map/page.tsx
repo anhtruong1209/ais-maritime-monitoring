@@ -12,9 +12,8 @@ import { useOpenAnomalies } from "@/hooks/use-anomalies";
 import { DEFAULT_TILE_LAYER_ID } from "@/lib/map/config";
 import { interpolateTrackPosition } from "@/lib/map/playback";
 import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
+import { ALL } from "@/lib/constants";
 import type { VesselWithLatestPosition } from "@/types";
-
-const ALL = "all";
 
 const DEFAULT_FILTERS: MapFilterState = {
   search: "",
@@ -46,8 +45,13 @@ export default function MapPage() {
     closeVessel,
   } = useVesselDetailDialog();
 
+  // `filters.search` deliberately isn't sent here — it only drives the
+  // search box's own (client-side, instant) autocomplete dropdown. Wiring
+  // it into this query used to refetch and rebuild the entire marker/
+  // cluster tree on every keystroke; now the marker set only changes for
+  // filters the user actually commits to (type/status dropdowns), and
+  // picking a vessel from the dropdown flies to/highlights it instead.
   const { data: vesselsResponse } = useAllVesselsForMap({
-    search: filters.search || undefined,
     shipType: filters.shipType === ALL ? undefined : filters.shipType,
     status: filters.status === ALL ? undefined : filters.status,
   });

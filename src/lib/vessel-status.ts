@@ -17,7 +17,7 @@ export function deriveVesselStatus(
   if (ageMinutes > OFFLINE_THRESHOLD_MINUTES) return "offline";
 
   if (latestPosition.sog < STATIONARY_SOG_KNOTS) {
-    return latestPosition.navStatus === "anchored" ? "anchored" : "stopped";
+    return latestPosition.navStatus === "at anchor" ? "anchored" : "stopped";
   }
 
   return "moving";

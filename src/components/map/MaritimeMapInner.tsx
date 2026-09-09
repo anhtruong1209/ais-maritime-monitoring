@@ -15,6 +15,8 @@ import { useEffect, useMemo, useState } from "react";
 import type { LatLngTuple } from "leaflet";
 import {
   DEFAULT_TILE_LAYER_ID,
+  HEATMAP_MIN_VESSELS,
+  HEATMAP_ZOOM_THRESHOLD,
   TILE_LAYERS,
   VIETNAM_CENTER,
   VIETNAM_DEFAULT_ZOOM,
@@ -32,13 +34,6 @@ import type {
   PredictedPoint,
   VesselWithLatestPosition,
 } from "@/types";
-
-// Below this zoom, a fleet-sized set of vessels draws as a density heatmap
-// instead of individual markers — hundreds of overlapping icons at a
-// zoomed-out view are both unreadable and expensive to render. Above it,
-// real markers (clustered) take over so individual vessels are legible.
-const HEATMAP_ZOOM_THRESHOLD = 7;
-const HEATMAP_MIN_VESSELS = 150;
 
 export interface MaritimeMapProps {
   vessels: VesselWithLatestPosition[];
@@ -172,12 +167,22 @@ function MapResizeHandler() {
   const map = useMap();
   useEffect(() => {
     const container = map.getContainer();
+    // A resize callback can fire while the container is transiently 0×0
+    // (mid CSS transition, a collapsing sidebar, an unmounting dialog).
+    // invalidateSize() redraws canvas-based layers (e.g. the heatmap) into
+    // that 0-sized box, and some browsers throw IndexSizeError out of
+    // getImageData for a 0-width source — skip the redraw until there's
+    // an actual box to draw into.
+    const safeInvalidateSize = () => {
+      if (container.clientWidth === 0 || container.clientHeight === 0) return;
+      map.invalidateSize();
+    };
     // Correct once immediately (covers the "mounted while still animating
     // in" case, which may not itself fire a ResizeObserver callback)...
-    const raf = requestAnimationFrame(() => map.invalidateSize());
+    const raf = requestAnimationFrame(safeInvalidateSize);
     // ...and again for any later resize (sidebar toggling, window resize
     // while the container's box actually changes, etc).
-    const observer = new ResizeObserver(() => map.invalidateSize());
+    const observer = new ResizeObserver(safeInvalidateSize);
     observer.observe(container);
     return () => {
       cancelAnimationFrame(raf);

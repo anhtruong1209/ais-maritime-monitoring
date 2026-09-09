@@ -110,6 +110,13 @@ export const TILE_LAYERS: TileLayerConfig[] = [
 
 export const DEFAULT_TILE_LAYER_ID = "osm-standard";
 
+// Below this zoom, a fleet-sized set of vessels draws as a density heatmap
+// instead of individual markers — hundreds of overlapping icons at a
+// zoomed-out view are both unreadable and expensive to render. Above it,
+// real markers (clustered) take over so individual vessels are legible.
+export const HEATMAP_ZOOM_THRESHOLD = 7;
+export const HEATMAP_MIN_VESSELS = 150;
+
 // Centered on the East Sea / South China Sea off central Vietnam so the
 // mainland coastline, Hoang Sa, and Truong Sa are all visible by default.
 export const VIETNAM_CENTER: LatLngTuple = [15.5, 111.0];

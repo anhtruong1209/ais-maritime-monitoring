@@ -1,4 +1,16 @@
-import type { AnomalySeverity, AnomalyType, ShipType, VesselStatus } from "@/types";
+import type {
+  AnomalySeverity,
+  AnomalyStatus,
+  AnomalyType,
+  ShipType,
+  VesselStatus,
+  VoyageStatus,
+} from "@/types";
+
+// Shared sentinel for "no filter selected" in dropdowns backed by a
+// `?: string` query param (ship type, status, etc.) — kept here so every
+// filter UI and its page use the exact same value.
+export const ALL = "all";
 
 export const SHIP_TYPES: ShipType[] = [
   "cargo",
@@ -48,6 +60,23 @@ export const ANOMALY_SEVERITY_ORDER: AnomalySeverity[] = [
   "high",
   "critical",
 ];
+
+// `as const` here (unlike the arrays above) so zod's z.enum() can infer the
+// exact literal union instead of widening to `string` — callers that need a
+// strict AnomalyStatus/VoyageStatus (e.g. VoyageFilters.status) rely on that.
+export const ANOMALY_STATUSES = [
+  "open",
+  "acknowledged",
+  "resolved",
+  "dismissed",
+] as const satisfies readonly AnomalyStatus[];
+
+export const VOYAGE_STATUSES = [
+  "scheduled",
+  "in_progress",
+  "completed",
+  "cancelled",
+] as const satisfies readonly VoyageStatus[];
 
 // A vessel is considered "offline" if no AIS fix has been received for
 // longer than this window.
