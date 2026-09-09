@@ -544,7 +544,9 @@ for (let i = 0; i < TOTAL_VESSELS; i++) {
     fromName = ground.name;
     toName = ground.name;
     cruiseSpeedKn = randFloat(3, 7);
-    jitterKm = 1.5;
+    // Smaller than before — fishing grounds are already tight to the coast,
+    // and jitter this size occasionally pushed a fix onto land.
+    jitterKm = 1.0;
   } else {
     const route = pick(ROUTES);
     const reversed = rand() < 0.5;
@@ -558,7 +560,10 @@ for (let i = 0; i < TOTAL_VESSELS; i++) {
       shipType === "tug" ? randFloat(6, 10) :
       shipType === "military" ? randFloat(12, 16) :
       randFloat(8, 14);
-    jitterKm = 2.5;
+    // Reduced from 2.5 — same reasoning as the fishing-ground jitter below:
+    // a smaller deviation keeps fixes from occasionally landing on shore
+    // near waypoints that hug the coastline closely.
+    jitterKm = 1.8;
   }
 
   const fleet = classifyFleet({ shipType, isVietnamese, fromName, toName });
@@ -572,8 +577,17 @@ for (let i = 0; i < TOTAL_VESSELS; i++) {
   else progressEnd = randFloat(0.97, 1.0);
 
   const progressStart = Math.max(0, progressEnd - randFloat(0.35, 0.6));
-  const intervalMinutes = shipType === "fishing" ? 20 : 15;
-  const legEndOffsetMin = randInt(0, 180); // stagger "now" across the fleet
+  // Denser than before (was 20/15 min) so historical playback and the
+  // "last Nh" trajectory views have more points to work with — "sống
+  // động" (livelier) data, per feedback.
+  const intervalMinutes = shipType === "fishing" ? 10 : 8;
+  // Stagger "now" across the fleet, but skewed so only a small minority
+  // (~10%) end up stale enough to read as offline (deriveVesselStatus in
+  // src/lib/vessel-status.ts uses OFFLINE_THRESHOLD_MINUTES=60) — a flat
+  // 0-180min spread put ~2/3 of the fleet over that threshold, which read
+  // as "most vessels are dark" instead of a realistic small minority.
+  const isOfflineVessel = rand() < 0.1;
+  const legEndOffsetMin = isOfflineVessel ? randInt(65, 300) : randInt(0, 45);
   const legEndMs = NOW - legEndOffsetMin * 60_000;
 
   const fixes = buildTrajectory({
