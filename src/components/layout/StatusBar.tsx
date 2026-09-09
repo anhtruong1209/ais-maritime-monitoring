@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useAllVesselsForMap } from "@/hooks/use-vessels";
+import { useEffect, useState } from "react";
+import { useFleetSummary } from "@/hooks/use-vessels";
 import { OFFLINE_VESSEL_COLOR } from "@/lib/map/ship-type-meta";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useLocale } from "@/providers/locale-provider";
 
 const VN_TIME_FORMAT = new Intl.DateTimeFormat("en-GB", {
@@ -20,21 +21,17 @@ export function StatusBar() {
   const { t } = useLocale();
   // Global "how's the fleet doing" readout, unfiltered — lives here (rather
   // than floating over the map) so it's visible on every page and never
-  // sits on top of the map's own zoom control.
-  const { data: vesselsResponse } = useAllVesselsForMap({});
-
-  const counts = useMemo(() => {
-    const vessels = vesselsResponse?.data ?? [];
-    let moving = 0;
-    let idle = 0; // anchored or stopped
-    let offline = 0;
-    for (const v of vessels) {
-      if (v.status === "moving") moving += 1;
-      else if (v.status === "offline") offline += 1;
-      else idle += 1;
-    }
-    return { total: vessels.length, moving, offline, online: moving + idle };
-  }, [vesselsResponse]);
+  // sits on top of the map's own zoom control. Fetches just the counts
+  // (see /api/vessels/summary), not the full 1500-row vessel list the map
+  // needs — this footer renders on every page, so that would otherwise
+  // mean every navigation pays for a payload it only reduces to 4 numbers.
+  const { data: stats } = useFleetSummary();
+  const counts = stats && {
+    total: stats.totalVessels,
+    moving: stats.moving,
+    offline: stats.offline,
+    online: stats.moving + stats.anchored + stats.stopped,
+  };
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -44,11 +41,11 @@ export function StatusBar() {
   return (
     <footer className="flex h-8 shrink-0 items-center justify-between border-t border-border bg-card px-4 text-[11px] text-muted-foreground">
       <div className="flex items-center gap-4">
-        <span>{t("AIS Maritime Monitoring · MVP")}</span>
-        {counts.total > 0 && (
+        <span>{t("AIS Maritime Monitoring")}</span>
+        {counts ? (
           <div className="hidden items-center gap-3 sm:flex">
             <span className="font-medium text-foreground">
-              {t("Fleet")} {counts.total}
+              {t("Vessel")} {counts.total}
             </span>
             <span className="flex items-center gap-1">
               <span className="size-1.5 rounded-full bg-emerald-500" />
@@ -63,6 +60,8 @@ export function StatusBar() {
               {t("No signal")} {counts.offline}
             </span>
           </div>
+        ) : (
+          <Skeleton className="hidden h-3 w-56 sm:block" />
         )}
       </div>
       <div className="flex items-center gap-4">

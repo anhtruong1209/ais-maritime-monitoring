@@ -262,8 +262,11 @@ export function MaritimeMapInner({
     [vessels]
   );
   const [currentZoom, setCurrentZoom] = useState(zoom);
-  const showHeatmap =
-    vesselsWithPosition.length >= HEATMAP_MIN_VESSELS && currentZoom < HEATMAP_ZOOM_THRESHOLD;
+  // Temporarily disabled to preview clustering-only at every zoom level —
+  // restore the commented condition below to bring the heatmap back.
+  const showHeatmap = false;
+  // const showHeatmap =
+  //   vesselsWithPosition.length >= HEATMAP_MIN_VESSELS && currentZoom < HEATMAP_ZOOM_THRESHOLD;
 
   // Memoized so the heat layer (which tears down and rebuilds its canvas
   // whenever this array's reference changes — see VesselHeatmapLayer) isn't

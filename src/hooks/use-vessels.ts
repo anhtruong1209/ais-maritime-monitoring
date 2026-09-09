@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/api-client";
 import type { VesselWithLatestPosition } from "@/types";
+import type { DashboardStats } from "@/lib/data/dashboard";
 
 export interface VesselsResponse {
   data: VesselWithLatestPosition[];
@@ -49,6 +50,17 @@ export function useAllVesselsForMap(filters: Omit<VesselFilters, "page" | "pageS
     // that's byte-for-byte identical, often hitching mid-interaction.
     // Long enough to still look "live" if this is ever pointed at a real
     // backend, rare enough not to matter for smoothness in the meantime.
+    refetchInterval: 5 * 60_000,
+  });
+}
+
+/** Fleet-wide counts only (total/moving/anchored/stopped/offline) — for
+ * widgets like the global StatusBar that show a summary on every page and
+ * don't need the full 1500-row vessel payload `useAllVesselsForMap` fetches. */
+export function useFleetSummary() {
+  return useQuery({
+    queryKey: ["vessels", "summary"],
+    queryFn: () => fetchJson<DashboardStats>("/api/vessels/summary"),
     refetchInterval: 5 * 60_000,
   });
 }
