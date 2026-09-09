@@ -451,7 +451,16 @@ const sqlNum = (v) => (v === null || v === undefined ? "null" : Number(v));
 // ---------------------------------------------------------------------------
 // Main generation
 // ---------------------------------------------------------------------------
-const TOTAL_VESSELS = 1000;
+// Overridable for a larger/lighter one-off generation (e.g. a fleet-scale
+// rendering/performance test) without changing the committed default:
+//   SEED_VESSEL_COUNT=7500 SEED_LIGHT=1 SEED_OUTPUT_PATH=/tmp/big.sql node scripts/generate-seed.mjs
+// SEED_LIGHT=1 drops the historical-voyage backchain (just the vessel's
+// current leg) — for a marker-rendering stress test, vessel *count* is
+// what matters, not each one having days of history behind it, and it
+// keeps AIS position row growth roughly linear with vessel count instead
+// of also multiplying by ~5 historical legs/vessel.
+const TOTAL_VESSELS = Number(process.env.SEED_VESSEL_COUNT) || 1000;
+const SEED_LIGHT = process.env.SEED_LIGHT === "1";
 const NAV_STATUS = {
   underway: "under way using engine",
   anchored: "at anchor",
@@ -629,7 +638,7 @@ for (let i = 0; i < TOTAL_VESSELS; i++) {
   // next voyage out, etc.) so each vessel has real trajectory depth for
   // paginated AIS message history and longer trajectory-window views, not
   // just its current leg.
-  const numHistoricalLegs = shipType === "fishing" ? randInt(3, 6) : randInt(2, 4);
+  const numHistoricalLegs = SEED_LIGHT ? 0 : shipType === "fishing" ? randInt(3, 6) : randInt(2, 4);
   let chainEndMs = new Date(fixes[0].timestamp).getTime();
   let sameDirectionAsCurrent = true;
 
@@ -887,7 +896,8 @@ for (const batch of chunk(fleetVesselRows, 500)) {
 }
 lines.push("");
 
-const outPath = join(process.cwd(), "supabase", "seed", "02_vessels_and_ais.sql");
+const outPath =
+  process.env.SEED_OUTPUT_PATH || join(process.cwd(), "supabase", "seed", "02_vessels_and_ais.sql");
 writeFileSync(outPath, lines.join("\n"), "utf8");
 
 console.log(`Generated ${vessels.length} vessels, ${positionRows.length} positions, ${voyageRows.length} voyages, ${predictionRows.length} predictions, ${anomalyRows.length} anomalies, ${FLEETS.length} fleets`);
