@@ -43,6 +43,18 @@ interface VesselDetailContextValue {
   setPlaybackProgress: (progress: number) => void;
   playbackPlaying: boolean;
   togglePlayback: () => void;
+  /** MMSI of the "other" vessel picked in the Collision Risk card's pair
+   * picker, if any — shared so the /map page can draw both vessels'
+   * predicted CPA paths on the actual map instead of the panel needing its
+   * own embedded map (same reasoning as historyHours/predictionHorizonMinutes). */
+  collisionCompareMmsi: string | null;
+  setCollisionCompareMmsi: (mmsi: string | null) => void;
+  /** Same "nothing shown/fetched until asked" rule as historyRequested —
+   * scanning the fleet for collision risk is comparatively heavy (it needs
+   * every vessel's position, not just this one), so CollisionRiskCard
+   * shouldn't run it the instant a detail panel opens. */
+  collisionRiskRequested: boolean;
+  requestCollisionRisk: () => void;
 }
 
 const VesselDetailContext = createContext<VesselDetailContextValue | null>(null);
@@ -59,6 +71,8 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
   const [predictionVesselMmsi, setPredictionVesselMmsi] = useState<string | null>(null);
   const [playbackProgress, setPlaybackProgress] = useState(0);
   const [playbackPlaying, setPlaybackPlaying] = useState(false);
+  const [collisionCompareMmsi, setCollisionCompareMmsi] = useState<string | null>(null);
+  const [collisionRiskRequested, setCollisionRiskRequested] = useState(false);
 
   const openVessel = useCallback((mmsi: string) => {
     setSelectedMmsi(mmsi);
@@ -73,6 +87,8 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
     setPredictionRequested(false);
     setPlaybackPlaying(false);
     setPlaybackProgress(0);
+    setCollisionCompareMmsi(null);
+    setCollisionRiskRequested(false);
   }, []);
 
   const closeVessel = useCallback(() => {
@@ -81,7 +97,11 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
     setPredictionRequested(false);
     setPlaybackPlaying(false);
     setPlaybackProgress(0);
+    setCollisionCompareMmsi(null);
+    setCollisionRiskRequested(false);
   }, []);
+
+  const requestCollisionRisk = useCallback(() => setCollisionRiskRequested(true), []);
 
   const setHistoryHours = useCallback((hours: number, mmsi: string) => {
     setHistoryHoursState(hours);
@@ -141,6 +161,10 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
       setPlaybackProgress,
       playbackPlaying,
       togglePlayback,
+      collisionCompareMmsi,
+      setCollisionCompareMmsi,
+      collisionRiskRequested,
+      requestCollisionRisk,
     }),
     [
       selectedMmsi,
@@ -157,6 +181,9 @@ export function VesselDetailProvider({ children }: { children: React.ReactNode }
       playbackProgress,
       playbackPlaying,
       togglePlayback,
+      collisionCompareMmsi,
+      collisionRiskRequested,
+      requestCollisionRisk,
     ]
   );
 

@@ -38,8 +38,14 @@ export function useVessels(filters: VesselFilters) {
   });
 }
 
-/** All vessels (up to the 1500-row cap) — used by the full map view. */
-export function useAllVesselsForMap(filters: Omit<VesselFilters, "page" | "pageSize">) {
+/** All vessels (up to the 1500-row cap) — used by the full map view.
+ * `enabled` (default true) lets a caller that only sometimes needs this
+ * heavy a payload — e.g. CollisionRiskCard, which only runs once the user
+ * asks for it — skip the fetch entirely until then. */
+export function useAllVesselsForMap(
+  filters: Omit<VesselFilters, "page" | "pageSize">,
+  options?: { enabled?: boolean }
+) {
   return useQuery({
     queryKey: ["vessels", "map", filters],
     queryFn: () =>
@@ -51,6 +57,7 @@ export function useAllVesselsForMap(filters: Omit<VesselFilters, "page" | "pageS
     // Long enough to still look "live" if this is ever pointed at a real
     // backend, rare enough not to matter for smoothness in the meantime.
     refetchInterval: 5 * 60_000,
+    enabled: options?.enabled ?? true,
   });
 }
 

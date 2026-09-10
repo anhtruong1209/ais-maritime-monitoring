@@ -11,6 +11,7 @@ import { VesselHistoryPanel } from "./VesselHistoryPanel";
 import { VoyageProgressCard } from "./VoyageProgressCard";
 import { DestinationPredictionStub } from "@/components/predictions/DestinationPredictionStub";
 import { VesselPredictionSection } from "@/components/predictions/VesselPredictionSection";
+import { CollisionRiskCard } from "@/components/predictions/CollisionRiskCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useVessel } from "@/hooks/use-vessel";
@@ -105,6 +106,12 @@ export function VesselDetailContent({ mmsi }: { mmsi: string }) {
         <SectionHeading>{t("AI Prediction")}</SectionHeading>
         <VesselPredictionSection mmsi={mmsi} />
         <DestinationPredictionStub />
+
+        <SectionHeading>{t("Collision Risk")}</SectionHeading>
+        <CollisionRiskCard
+          vesselId={vessel.id}
+          latest={latest ? { latitude: latest.latitude, longitude: latest.longitude, sog: latest.sog, cog: latest.cog } : null}
+        />
 
         <SectionHeading>{t("Alerts")}</SectionHeading>
         <VesselAlertsCard mmsi={mmsi} />

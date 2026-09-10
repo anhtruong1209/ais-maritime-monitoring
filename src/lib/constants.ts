@@ -105,3 +105,19 @@ export const PREDICTION_HORIZON_OPTIONS = [
 ] as const;
 
 export const DEFAULT_PREDICTION_HORIZON_MINUTES = 180;
+
+// Deterministic CPA/TCPA collision-risk baseline (see lib/collision.ts) —
+// NOT an AI model. Only vessel pairs within this radius are worth running
+// CPA/TCPA on at all; the CPA thresholds then classify how tight the
+// predicted closest approach is, but only if it happens within the TCPA
+// horizon (a closing course predicted 3 hours out isn't an active risk).
+// These numbers are a starting point for the demo, not a validated
+// maritime safety standard — see the Phase 2 architecture audit's
+// "labeling strategy" section; treating them as final would be a mistake.
+export const COLLISION_NEARBY_RADIUS_KM = 20;
+export const COLLISION_TCPA_HORIZON_MINUTES = 30;
+export const COLLISION_CPA_THRESHOLDS_KM = {
+  critical: 0.5,
+  high: 1.5,
+  medium: 3,
+} as const;

@@ -194,6 +194,18 @@ export const VI_DICTIONARY: Record<string, string> = {
   "AI Prediction": "Dự đoán AI",
   "No open alerts for this vessel.": "Tàu này chưa có cảnh báo nào đang mở.",
 
+  // Collision risk (CPA/TCPA baseline)
+  "CPA/TCPA BASELINE — NOT AI": "ĐƯỜNG CƠ SỞ CPA/TCPA — KHÔNG PHẢI AI",
+  "No significant collision risk detected among nearby vessels.":
+    "Không phát hiện nguy cơ va chạm đáng kể với các tàu lân cận.",
+  "No other vessels nearby to compare against.": "Không có tàu nào ở gần để so sánh.",
+  "Compare against…": "So sánh với…",
+  "Not on a closing course at current speed/heading.":
+    "Không đang tiến lại gần nhau ở tốc độ/hướng đi hiện tại.",
+  "Scans nearby vessels' AIS data to check CPA/TCPA — not run automatically.":
+    "Quét dữ liệu AIS của các tàu lân cận để tính CPA/TCPA — không tự động chạy.",
+  "Check collision risk": "Kiểm tra nguy cơ va chạm",
+
   // Voyage progress
   Progress: "Tiến độ",
 

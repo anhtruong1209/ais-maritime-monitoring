@@ -23,6 +23,7 @@ import {
 } from "@/lib/map/config";
 import { createPlaybackIcon, createPortIcon, createVesselIcon } from "@/lib/map/icons";
 import { AnomalyMarkerLayer } from "./AnomalyMarkerLayer";
+import { CollisionPathLayer, type CollisionPathPair } from "./CollisionPathLayer";
 import { PredictedRouteLayer } from "./PredictedRouteLayer";
 import { TrajectoryLayer } from "./TrajectoryLayer";
 import { VectorBasemapLayer } from "./VectorBasemapLayer";
@@ -44,6 +45,10 @@ export interface MaritimeMapProps {
   onSelectVessel?: (vessel: VesselWithLatestPosition) => void;
   historicalTrack?: AISPosition[];
   predictedRoute?: PredictedPoint[];
+  /** Two vessels' predicted paths to their CPA (closest point of approach)
+   * — see CollisionRiskCard/lib/collision.ts. `null` when no collision-risk
+   * pair is actively selected. */
+  collisionPair?: CollisionPathPair | null;
   /** Interpolated position for historical-track playback (see
    * src/lib/map/playback.ts) — `null` when no playback is active. */
   playbackPosition?: { latitude: number; longitude: number; cog: number } | null;
@@ -218,6 +223,7 @@ export function MaritimeMapInner({
   onSelectVessel,
   historicalTrack = [],
   predictedRoute = [],
+  collisionPair = null,
   playbackPosition = null,
   center = VIETNAM_CENTER,
   zoom = VIETNAM_DEFAULT_ZOOM,
@@ -361,6 +367,7 @@ export function MaritimeMapInner({
 
       <TrajectoryLayer positions={historicalTrack} />
       <PredictedRouteLayer points={predictedRoute} />
+      <CollisionPathLayer pair={collisionPair} />
       <PlaybackMarker position={playbackPosition} />
       <AnomalyMarkerLayer anomalies={anomalies} />
 

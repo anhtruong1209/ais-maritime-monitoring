@@ -1,14 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { LatLngTuple } from "leaflet";
 import { MapCanvas } from "@/components/map/MapCanvas";
 import { MapControlsPanel, type MapFilterState } from "@/components/map/MapControlsPanel";
 import { MapLegend } from "@/components/map/MapLegend";
+import type { CollisionPathPair } from "@/components/map/CollisionPathLayer";
 import { useAllVesselsForMap } from "@/hooks/use-vessels";
 import { usePorts } from "@/hooks/use-ports";
 import { useVesselPositions } from "@/hooks/use-vessel-positions";
 import { useTrajectoryPrediction } from "@/hooks/use-predictions";
 import { useOpenAnomalies } from "@/hooks/use-anomalies";
+import { assessCollisionRisk, calculateCpaTcpa, projectPosition } from "@/lib/collision";
 import { DEFAULT_TILE_LAYER_ID } from "@/lib/map/config";
 import { interpolateTrackPosition } from "@/lib/map/playback";
 import { useVesselDetailDialog } from "@/providers/vessel-detail-provider";
@@ -41,6 +44,7 @@ export default function MapPage() {
     predictionRequested,
     predictionVesselMmsi,
     playbackProgress,
+    collisionCompareMmsi,
     openVessel,
     closeVessel,
   } = useVesselDetailDialog();
@@ -114,6 +118,33 @@ export default function MapPage() {
     predictionHorizonMinutes
   );
 
+  // Draws both vessels' predicted straight-line paths to their CPA — see
+  // CollisionRiskCard, which is what sets collisionCompareMmsi. Only ever
+  // set while that vessel's detail panel is open (openVessel/closeVessel
+  // reset it to null), so `activeVessel` here is always the same vessel
+  // the card computed it for — no extra "is this stale" guard needed.
+  const collisionPair: CollisionPathPair | null = useMemo(() => {
+    if (!collisionCompareMmsi || !activeVessel?.latestPosition) return null;
+    const other = vessels.find((v) => v.mmsi === collisionCompareMmsi);
+    if (!other?.latestPosition) return null;
+
+    const a = activeVessel.latestPosition;
+    const b = other.latestPosition;
+    const result = calculateCpaTcpa(a, b);
+    if (result.tcpaMinutes == null) return null;
+
+    const projectedA = projectPosition(a, result.tcpaMinutes);
+    const projectedB = projectPosition(b, result.tcpaMinutes);
+
+    return {
+      vesselACurrent: [a.latitude, a.longitude] as LatLngTuple,
+      vesselAProjected: [projectedA.latitude, projectedA.longitude] as LatLngTuple,
+      vesselBCurrent: [b.latitude, b.longitude] as LatLngTuple,
+      vesselBProjected: [projectedB.latitude, projectedB.longitude] as LatLngTuple,
+      riskLevel: assessCollisionRisk(result).riskLevel,
+    };
+  }, [collisionCompareMmsi, activeVessel, vessels]);
+
   // A single click opens the one vessel-detail panel directly — no separate
   // preview popup that then links to a second, bigger panel.
   const handleSelectVessel = useCallback(
@@ -144,6 +175,7 @@ export default function MapPage() {
         onSelectVessel={handleSelectVessel}
         historicalTrack={showTrajectory ? (positions ?? []) : []}
         predictedRoute={showPredicted ? (trajectory?.points ?? []) : []}
+        collisionPair={collisionPair}
         playbackPosition={playbackPosition}
         tileLayerId={filters.tileLayerId}
         resetSignal={resetSignal}
